@@ -32,3 +32,11 @@ test("application shell includes required landmarks and no inline executable scr
   assert.doesNotMatch(html, /<script(?![^>]*\bsrc=)[^>]*>/i);
   assert.match(html, /Content-Security-Policy/);
 });
+
+test("security flow is local-only and backup files are not cached", async () => {
+  const worker = await readFile(resolve(root, "service-worker.js"), "utf8");
+  const bootstrap = await readFile(resolve(root, "src/app/bootstrap.js"), "utf8");
+  assert.doesNotMatch(worker, /backup.*\.json/i);
+  assert.match(bootstrap, /createUnlockDialog/);
+  assert.doesNotMatch(bootstrap, /fetch\(|XMLHttpRequest|WebSocket/);
+});

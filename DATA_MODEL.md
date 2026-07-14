@@ -44,6 +44,6 @@ Before upgrade, open the current version, run ordered idempotent migration steps
 
 Restore parses and validates version, checks referential integrity and monetary invariants in isolation, reports incompatibilities, and replaces active data only after full success. Interrupted or invalid restores leave active data unchanged.
 
-## Deferred schema decisions
+## Milestone 2 physical schema
 
-Milestone 2 will finalize indexes, exact store boundaries, encryption envelope fields, soft-delete/archive states, audit-event vocabulary, and migration fixtures after Milestone 1 establishes the tested module/runtime foundation.
+Schema version 1 maps each of the 26 approved logical boundaries to its own object store with key path `id`. General stores index `updatedAt` and `archived`; audit logs index `createdAt` and `type`; settings index `updatedAt`. Encryption envelopes are versioned AES-GCM records containing KDF metadata, salt, IV, and ciphertext. Domain-specific indexes and financial invariants remain deferred until their owning milestones introduce real records and measured query patterns.

@@ -38,7 +38,7 @@ FinOrbit must never store full card numbers, CVVs, banking or broker passwords, 
 
 ## Session protection
 
-PIN/password and auto-lock behavior will be designed in Milestone 2. Until then, no claim of at-rest application encryption is permitted. Locking must clear decrypted in-memory state and must not imply protection against an already-compromised device.
+Milestone 2 provides optional PIN/passphrase verification, manual/inactivity/hidden-tab locking, failed-attempt delay, and cross-tab lock/reset signaling. PBKDF2-SHA-256 uses 600,000 iterations and independent derivation contexts for verification and AES-GCM encryption. Locking clears the held secret reference, but does not protect an already-compromised device or make all IndexedDB metadata opaque.
 
 ## Milestone 1 security impact
 

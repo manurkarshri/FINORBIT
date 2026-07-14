@@ -4,7 +4,7 @@
 
 FinOrbit Version 1 will be a static, installable PWA built with semantic HTML, modular CSS, and native JavaScript modules. It will be hosted on GitHub Pages, use IndexedDB for durable local data, and keep financial-domain logic independent from UI and persistence. No framework or required backend is approved for Version 1.
 
-Milestone 1 implements the application-shell portion of this architecture. Persistence and financial-domain layers remain intentionally absent until their approved milestones.
+Milestone 2 adds the persistence and security foundation: versioned IndexedDB migrations, atomic units of work, repositories, Web Crypto, lock coordination, backup/restore, and reset. Financial-domain layers remain intentionally absent.
 
 ## Architectural principles
 

@@ -15,6 +15,10 @@ All notable changes to FinOrbit are documented here. The project follows milesto
 - Versioned, scope-safe service worker and offline application-shell fallback.
 - PWA manifest, original install icons, online/offline and update messaging, and safe global error handling.
 - Dependency-free Node test/static validation foundation and GitHub Actions validation/Pages workflows.
+- Versioned 26-store IndexedDB schema, ordered migrations, connection manager, repositories, validation, recoverable errors, and atomic multi-store transactions.
+- Optional PIN/passphrase app lock, Web Crypto KDF/encryption envelopes, audit events, and multi-tab lock/reset coordination.
+- Standard and encrypted backups, isolated validation/preview, atomic restore, and local-data reset controls.
+- `fake-indexeddb@6.2.5` as an exact test-only dependency for database integration coverage.
 
 ### Confirmed
 

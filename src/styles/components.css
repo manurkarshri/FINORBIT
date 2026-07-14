@@ -49,3 +49,12 @@
   .loading-state__mark { animation: spin 900ms linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 }
+.security-center { margin-top: 2rem; padding: clamp(1rem, 3vw, 2rem); border: 1px solid var(--color-border, #b8c4d6); border-radius: 1rem; background: var(--color-surface, Canvas); }
+.security-center__form, .security-center__actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.security-center input, .security-center select { min-height: 2.75rem; padding: .5rem .75rem; border: 1px solid currentColor; border-radius: .5rem; }
+.security-center__warning { font-weight: 600; }
+[data-locked] .main-content { filter: blur(3px); pointer-events: none; user-select: none; }
+.lock-dialog { max-width: 28rem; border: 0; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1.5rem 4rem #0008; }
+.lock-dialog::backdrop { background: #08101de6; }
+.lock-dialog form { display: grid; gap: 1rem; }
+.lock-dialog input { min-height: 2.75rem; padding: .5rem .75rem; }
