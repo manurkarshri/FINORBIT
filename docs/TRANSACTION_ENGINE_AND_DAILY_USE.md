@@ -12,9 +12,13 @@ Every command atomically persists its transaction, signed integer-paise effects,
 
 Loan payment enforces principal + interest + fees = total. Transfer source/destination must differ. Splits must use integer paise and equal the transaction total. Card overpayment is accepted with a warning. Investment principal is not ordinary expense, and card/loan principal payment is not counted twice.
 
+Physical-asset purchase/sale uses exactly one explicit `propertyId`, `vehicleId`, or `otherAssetId`. The transaction boundary maps that field to the approved store, verifies the record and active lifecycle, and only then constructs a posting; conflicting or missing references are rejected.
+
+Linked-entity eligibility is centralized in the transaction service. New postings require active, non-archived accounts. Card purchases require active cards; payments allow active or blocked cards, and a closed non-archived card only for an explicit payoff while a positive outstanding projection remains. Loan payments allow active or paused non-archived loans; disbursement requires active; closed loans use correction rather than normal payment. Investment purchases/sales and physical-asset purchases/sales require active, non-archived/unsold records. Closing or archiving later never hides historical transactions.
+
 ## History and lifecycle
 
-History is newest-first and indexed by date/type/status and major entity/category references. Search covers merchant/source, notes, and tags. Replacement editing atomically deactivates the original effect set, links an immutable replacement, and preserves audit/version history. Void deactivates effects once; safe restore reactivates that exact set once. Duplicate creates a new ID/date and excludes receipts unless explicitly requested.
+History is newest-first and indexed by date/type/status and major entity/category references. Search covers merchant/source, notes, and tags. Replacement editing atomically deactivates the original effect set, links an immutable replacement, and preserves audit/version history. The replacement snapshot is indexed once under the original transaction chain and once under the replacement transaction, so both detail screens can retrieve immutable history without depending only on audit traversal. Void deactivates effects once; safe restore reactivates that exact set once. Duplicate creates a new ID/date and excludes receipts unless explicitly requested.
 
 ## Receipts and backups
 

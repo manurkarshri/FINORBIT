@@ -27,6 +27,7 @@ All notable changes to FinOrbit are documented here. The project follows milesto
 - Explicit 21-type posting engine with atomic transaction/effect/split/version/audit persistence and opening-position projections.
 - Replacement editing, duplicate, void/restore protections, safe receipt lifecycle, default transaction categories, and merchant snapshots.
 - Schema v3 transaction effect/version stores and indexed history/reference queries.
+- Centralized linked-entity lifecycle eligibility, explicit validated property/vehicle/other-asset postings, and replacement history discoverable from both transaction links.
 
 ### Confirmed
 

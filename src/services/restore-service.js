@@ -26,7 +26,7 @@ export function validateBackup(payload) {
   }
   for (const posting of payload.stores.transactionEffects ?? []) {
     if (!Number.isSafeInteger(posting.amountPaise)) throw new Error("Transaction posting contains non-integer money");
-    const target = { account: "accounts", creditCard: "creditCards", loan: "loans", investment: "investments", property: "properties", vehicle: "vehicles" }[posting.entityType];
+    const target = { account: "accounts", creditCard: "creditCards", loan: "loans", investment: "investments", property: "properties", vehicle: "vehicles", otherAsset: "otherAssets" }[posting.entityType];
     if (target && posting.entityId && !idsByStore.get(target).has(posting.entityId)) throw new Error("Transaction posting has a broken entity reference");
   }
   for (const transaction of payload.stores.transactions ?? []) if (transaction.status === "posted" && !(payload.stores.transactionEffects ?? []).some((posting) => posting.transactionId === transaction.id && posting.active)) throw new Error("Posted transaction is missing active effects");

@@ -1,0 +1,33 @@
+name: One-time Milestone 4 Preview
+
+on:
+  push:
+    branches: [codex/transactions]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check
+      - name: Verify immutable preview URL
+        env:
+          PREVIEW_URL: https://raw.githack.com/${{ github.repository }}/${{ github.sha }}/index.html
+        run: |
+          curl --fail --location --retry 6 --retry-delay 5 "$PREVIEW_URL" --output /tmp/finorbit-preview.html
+          grep -q 'FinOrbit</title>' /tmp/finorbit-preview.html
+          printf '### One-time Milestone 4 preview\n\n- Source commit: `%s`\n- Preview URL: %s\n- Production Pages: unchanged\n' "$GITHUB_SHA" "$PREVIEW_URL" >> "$GITHUB_STEP_SUMMARY"

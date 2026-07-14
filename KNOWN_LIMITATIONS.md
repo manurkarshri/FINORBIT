@@ -34,6 +34,7 @@ These limitations change only through an approved specification/roadmap update.
 - Reconciliation state is stored but no reconciliation workflow exists. Recurring templates still generate no occurrences or reminders.
 - Standard backups omit receipt content unless complete receipt inclusion is explicitly requested. Receipt storage is limited to 10 MB per file and 50 MB total.
 - Categories are a minimal default logging set; full category management and budgets remain Milestone 7.
+- Closed cards can receive a normal payment only while a positive outstanding projection remains; closed loans require the explicit balance-correction workflow. Archived/sold assets must be restored or reactivated before new postings.
 
 ## Milestone 2
 

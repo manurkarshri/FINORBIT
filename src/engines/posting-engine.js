@@ -1,4 +1,5 @@
 export const TRANSACTION_TYPES = Object.freeze(["income", "expense", "transfer", "credit-card-purchase", "credit-card-payment", "loan-disbursement", "loan-payment", "investment-purchase", "investment-sale", "dividend", "interest", "refund", "reimbursement", "asset-purchase", "asset-sale", "cash-withdrawal", "cash-deposit", "gift-received", "gift-given", "tax-payment", "balance-correction"]);
+export function physicalAssetReference(tx) { const populated = [["property", tx.propertyId], ["vehicle", tx.vehicleId], ["otherAsset", tx.otherAssetId]].filter(([, id]) => Boolean(id)); return populated.length === 1 ? { entityType: populated[0][0], entityId: populated[0][1] } : null; }
 
 const effect = (dimension, entityType, entityId, amountPaise, classification) => ({ dimension, entityType, entityId, amountPaise, classification });
 const assetIncrease = (id, amount) => effect("account-asset", "account", id, amount, "increase");
@@ -22,8 +23,8 @@ export function buildPostings(tx) {
     case "investment-sale": return [effect("investment-asset", "investment", tx.investmentId, -(tx.costBasisPaise ?? a), "decrease"), assetIncrease(tx.destinationAccountId, a - fees - taxes), ...(fees ? [expense(fees, "investment-fee")] : []), ...(taxes ? [expense(taxes, "investment-tax")] : [])];
     case "refund": return tx.creditCardId ? [liabilityDecrease("creditCard", tx.creditCardId, a), expense(-a, "refund")] : [assetIncrease(tx.destinationAccountId, a), expense(-a, "refund")];
     case "reimbursement": return tx.reimbursementState === "expected" ? [effect("receivable", "receivable", tx.originalTransactionId, a, "increase"), expense(-a, "reimbursement-expected")] : [assetIncrease(tx.destinationAccountId, a), effect("receivable", "receivable", tx.originalTransactionId, -a, "settled")];
-    case "asset-purchase": return [assetDecrease(tx.sourceAccountId, a + fees + taxes), effect("physical-asset", tx.assetType ?? "property", tx.assetId, a, "increase"), ...(fees + taxes ? [expense(fees + taxes, "asset-cost")] : [])];
-    case "asset-sale": return [effect("physical-asset", tx.assetType ?? "property", tx.assetId, -(tx.costBasisPaise ?? a), "decrease"), assetIncrease(tx.destinationAccountId, a - fees - taxes), ...(fees + taxes ? [expense(fees + taxes, "asset-sale-cost")] : [])];
+    case "asset-purchase": { const asset = physicalAssetReference(tx); if (!asset) throw new Error("Asset purchase requires exactly one physical-asset reference."); return [assetDecrease(tx.sourceAccountId, a + fees + taxes), effect("physical-asset", asset.entityType, asset.entityId, a, "increase"), ...(fees + taxes ? [expense(fees + taxes, "asset-cost")] : [])]; }
+    case "asset-sale": { const asset = physicalAssetReference(tx); if (!asset) throw new Error("Asset sale requires exactly one physical-asset reference."); return [effect("physical-asset", asset.entityType, asset.entityId, -(tx.costBasisPaise ?? a), "decrease"), assetIncrease(tx.destinationAccountId, a - fees - taxes), ...(fees + taxes ? [expense(fees + taxes, "asset-sale-cost")] : [])]; }
     case "balance-correction": return [effect("correction", "account", tx.sourceAccountId ?? tx.destinationAccountId, tx.direction === "decrease" ? -a : a, "adjustment")];
     default: throw new Error("Unsupported transaction type.");
   }
@@ -44,6 +45,7 @@ export function validateTransaction(tx, splits = []) {
   if (tx.type === "loan-payment" && [tx.principalPaise, tx.interestPaise, tx.feesPaise].some((v) => !Number.isSafeInteger(v ?? 0) || (v ?? 0) < 0)) errors.principalPaise = "Loan components must be non-negative integer paise.";
   if (tx.type === "loan-payment" && (tx.principalPaise ?? 0) + (tx.interestPaise ?? 0) + (tx.feesPaise ?? 0) !== tx.amountPaise) errors.amountPaise = "Principal, interest, and fees must equal the total cash outflow.";
   if (tx.type === "balance-correction" && !tx.reason?.trim()) errors.reason = "Explain why this balance correction is needed.";
+  if (["asset-purchase", "asset-sale"].includes(tx.type)) { const count = [tx.propertyId, tx.vehicleId, tx.otherAssetId].filter(Boolean).length; if (count !== 1) errors.physicalAsset = count ? "Choose only one property, vehicle, or other asset." : "Choose a property, vehicle, or other asset."; }
   if (splits.length && splits.reduce((sum, split) => sum + split.amountPaise, 0) !== tx.amountPaise) errors.splits = "Split amounts must equal the transaction total exactly.";
   if (splits.some((split) => !Number.isSafeInteger(split.amountPaise) || split.amountPaise < 0)) errors.splits = "Every split must use non-negative integer paise.";
   return errors;

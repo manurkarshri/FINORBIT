@@ -3,7 +3,7 @@ import { runTransaction } from "../database/transaction.js";
 import { createAuditEvent } from "../database/audit.js";
 import { buildPostings, reversePostings, validateTransaction } from "../engines/posting-engine.js";
 
-const REFS = { sourceAccountId: "accounts", destinationAccountId: "accounts", creditCardId: "creditCards", loanId: "loans", investmentId: "investments", propertyId: "properties", vehicleId: "vehicles", categoryId: "categories", subcategoryId: "subcategories", familyMemberId: "familyMembers", recurringRuleId: "recurringRules", originalTransactionId: "transactions" };
+const REFS = { sourceAccountId: "accounts", destinationAccountId: "accounts", creditCardId: "creditCards", loanId: "loans", investmentId: "investments", propertyId: "properties", vehicleId: "vehicles", otherAssetId: "otherAssets", categoryId: "categories", subcategoryId: "subcategories", familyMemberId: "familyMembers", recurringRuleId: "recurringRules", originalTransactionId: "transactions" };
 const QUERY_INDEX = { type: "byType", status: "byStatus", sourceAccountId: "bySourceAccountId", destinationAccountId: "byDestinationAccountId", creditCardId: "byCreditCardId", loanId: "byLoanId", investmentId: "byInvestmentId", categoryId: "byCategoryId", merchantId: "byMerchantId", familyMemberId: "byFamilyMemberId", accountingDate: "byAccountingDate" };
 export const DEFAULT_CATEGORIES = Object.freeze(["Income", "Housing", "Groceries", "Food", "Utilities", "Transport", "Education", "Family", "Healthcare", "Insurance", "Personal", "Entertainment", "Travel", "Taxes", "Financial charges", "Business", "Agriculture", "Donations", "Miscellaneous"]);
 
@@ -12,14 +12,23 @@ export async function ensureDefaultCategories(database, { now = () => new Date()
   const instant = now(); await runTransaction(database, ["categories"], "readwrite", async ({ store }) => { for (const name of DEFAULT_CATEGORIES) await store("categories").add({ id: `category_${name.toLocaleLowerCase("en-IN").replaceAll(" ", "_")}`, name, nameKey: name.toLocaleLowerCase("en-IN"), status: "active", archived: false, createdAt: instant, updatedAt: instant, schemaVersion: 3 }); });
 }
 
+export async function validateLinkedEntityEligibility(database, input) {
+  const errors = {}; const records = {};
+  for (const [field, storeName] of Object.entries(REFS)) if (input[field]) { const record = await runTransaction(database, [storeName], "readonly", ({ store }) => store(storeName).get(input[field])); records[field] = record; if (!record) errors[field] = "Choose an existing related record."; }
+  for (const field of ["sourceAccountId", "destinationAccountId"]) if (input[field] && records[field] && (records[field].archived || records[field].status !== "active")) errors[field] = "New transactions require an active, non-archived account.";
+  const card = records.creditCardId; if (card) { if (card.archived) errors.creditCardId = "Archived cards cannot receive new transactions."; else if (input.type === "credit-card-purchase" && card.status !== "active") errors.creditCardId = "Card purchases require an active card."; else if (input.type === "credit-card-payment" && !["active", "blocked", "closed"].includes(card.status)) errors.creditCardId = "Card payments require an active or blocked card."; else if (input.type === "credit-card-payment" && card.status === "closed") { const outstanding = await projectionFor(database, "creditCard", card.id); if (outstanding <= 0) errors.creditCardId = "A closed card accepts only an explicit payoff while outstanding remains."; } }
+  const loan = records.loanId; if (loan) { if (loan.archived) errors.loanId = "Archived loans cannot receive new transactions."; else if (input.type === "loan-payment" && !["active", "paused"].includes(loan.status)) errors.loanId = "Normal loan payments require an active or paused loan; use correction for a closed loan."; else if (input.type === "loan-disbursement" && loan.status !== "active") errors.loanId = "Loan disbursement requires an active loan."; }
+  const investment = records.investmentId; if (investment && (investment.archived || investment.status !== "active")) errors.investmentId = "Investment purchases and sales require an active, non-archived holding.";
+  for (const field of ["propertyId", "vehicleId", "otherAssetId"]) { const asset = records[field]; if (asset && (asset.archived || asset.status !== "active")) errors[field] = "Physical-asset transactions require an active, non-archived and unsold asset."; }
+  return errors;
+}
+
+async function projectionFor(database, entityType, entityId) { const opening = await runTransaction(database, ["openingPositions"], "readonly", ({ store }) => store("openingPositions").indexGetAll("byEntityId", entityId)); const effects = await runTransaction(database, ["transactionEffects"], "readonly", ({ store }) => store("transactionEffects").indexGetAll("byEntityId", entityId)); return (opening[0]?.amountPaise ?? 0) + effects.filter((p) => p.active && p.entityType === entityType).reduce((sum, p) => sum + p.amountPaise, 0); }
+
 export function createTransactionService(database, { now = () => new Date().toISOString(), id = () => createOpaqueId() } = {}) {
   async function validate(input, splits) {
     const errors = validateTransaction(input, splits);
-    for (const [field, storeName] of Object.entries(REFS)) if (input[field]) {
-      const target = await runTransaction(database, [storeName], "readonly", ({ store }) => store(storeName).get(input[field]));
-      if (!target) errors[field] = "Choose an existing related record.";
-      if (storeName === "accounts" && (target?.archived || target?.status !== "active")) errors[field] = "Archived or inactive accounts cannot receive new postings.";
-    }
+    Object.assign(errors, await validateLinkedEntityEligibility(database, input));
     return errors;
   }
   async function create(input, { splits = [], auditType = "transaction.created" } = {}) {
@@ -49,7 +58,8 @@ export function createTransactionService(database, { now = () => new Date().toIS
       const active = await store("transactionEffects").indexGetAll("byTransactionId", original.id); for (const posting of active) { posting.active = false; posting.updatedAt = instant; await store("transactionEffects").put(posting); }
       original.status = "voided"; original.voidReason = "Replaced by an edited transaction"; original.replacedById = replacement.id; original.updatedAt = instant; await store("transactions").put(original); await store("transactions").add(replacement);
       for (const posting of postings) await store("transactionEffects").add(posting); for (let index = 0; index < splits.length; index++) await store("transactionSplits").add({ ...splits[index], id: id(), transactionId: replacement.id, order: index, createdAt: instant, updatedAt: instant, schemaVersion: 3 });
-      await store("transactionVersions").add({ id: id(), transactionId: original.id, version: 2, snapshot: replacement, createdAt: instant, updatedAt: instant, schemaVersion: 3 }); await store("auditLogs").add(createAuditEvent("transaction.replaced", { transactionId: original.id, replacementId: replacement.id })); if (splits.length) await store("auditLogs").add(createAuditEvent("split.changed", { transactionId: replacement.id, count: splits.length }));
+      await store("transactionVersions").add({ id: id(), transactionId: original.id, version: 2, snapshot: replacement, replacementId: replacement.id, createdAt: instant, updatedAt: instant, schemaVersion: 3 });
+      await store("transactionVersions").add({ id: id(), transactionId: replacement.id, version: 1, snapshot: replacement, originalTransactionId: original.id, createdAt: instant, updatedAt: instant, schemaVersion: 3 }); await store("auditLogs").add(createAuditEvent("transaction.replaced", { transactionId: original.id, replacementId: replacement.id })); if (splits.length) await store("auditLogs").add(createAuditEvent("split.changed", { transactionId: replacement.id, count: splits.length }));
     }); return { ok: true, transaction: replacement, postings, warnings: await warnings(replacement) };
   }
   async function voidTransaction(transactionId, reason, { replacementId, auditType = "transaction.voided" } = {}) {
