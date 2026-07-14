@@ -19,6 +19,10 @@ All notable changes to FinOrbit are documented here. The project follows milesto
 - Optional PIN/passphrase app lock, Web Crypto KDF/encryption envelopes, audit events, and multi-tab lock/reset coordination.
 - Standard and encrypted backups, isolated validation/preview, atomic restore, and local-data reset controls.
 - `fake-indexeddb@6.2.5` as an exact test-only dependency for database integration coverage.
+- Resumable 13-stage onboarding with profile/regional preferences and minimum-setup enforcement.
+- Account, card, loan, income, commitment, investment, property, and vehicle configuration with shared validation and lifecycle actions.
+- Schema v2 migration and dedicated audited opening-position records, with exact decimal-string investment quantities.
+- Entity-aware backup/restore counts and mobile-first offline-cached onboarding modules.
 
 ### Confirmed
 

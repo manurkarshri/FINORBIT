@@ -47,3 +47,9 @@ Restore parses and validates version, checks referential integrity and monetary 
 ## Milestone 2 physical schema
 
 Schema version 1 maps each of the 26 approved logical boundaries to its own object store with key path `id`. General stores index `updatedAt` and `archived`; audit logs index `createdAt` and `type`; settings index `updatedAt`. Encryption envelopes are versioned AES-GCM records containing KDF metadata, salt, IV, and ciphertext. Domain-specific indexes and financial invariants remain deferred until their owning milestones introduce real records and measured query patterns.
+
+## Milestone 3 physical schema
+
+Schema version 2 preserves all 26 stores and adds `openingPositions`, indexed by `entityId` and `effectiveDate`. Profiles, accounts, cards, loans, recurring rules, investments, properties, and vehicles add `status` and normalized `nameKey` indexes for active/status filtering and duplicate-name lookup. Opening records contain stable entity ID/type, integer-paise value, effective date, source (`onboarding` or `manual`), timestamps, and audit linkage. Investment quantities persist as non-negative decimal strings; persisted money never uses binary floating point.
+
+Income sources and commitment templates share `recurringRules` with an explicit `kind`; neither creates `recurringOccurrences`. Archive is reversible and hard deletion is not the normal lifecycle. Closed/sold entities remain readable.

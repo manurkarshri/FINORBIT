@@ -46,6 +46,10 @@ Failed-attempt counters and delay are session-memory controls and reset on a ful
 
 The application shell stores only the non-sensitive theme choice in `localStorage`. It uses no IndexedDB, financial data, API key, external API, browser permission, authentication, or encryption. A restrictive document Content Security Policy permits only same-origin scripts, styles, images, connections, manifest, and worker resources. Cache Storage contains the explicit static shell allowlist only.
 
+## Milestone 3 data protection
+
+Profiles, entity labels, institution/lender labels, last four digits, financial configuration, opening positions, dates, and free-text notes are stored in IndexedDB and included in backups. These entity records are not field-encrypted at rest; do not claim otherwise. Encrypted backups protect the exported payload, while optional app lock is only a session-access control. Full account/card numbers, CVV, credentials, PINs, PAN, Aadhaar, exact property addresses, and unnecessary identity fields are rejected or never requested. No external connection or new production dependency is introduced.
+
 ## Security review gates
 
 Every milestone report states new sensitive data, permissions, network connections, risks, and mitigations. Critical findings block release. No secrets may appear in commits. Security and recovery behavior require automated negative tests plus manual browser tests before Version 1.

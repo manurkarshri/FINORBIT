@@ -11,6 +11,7 @@ const required = [
   "src/styles/layout.css", "src/styles/components.css", "src/styles/utilities.css",
   "src/database/schema.js", "src/database/connection.js", "src/security/crypto.js",
   "src/services/backup-service.js", "src/services/restore-service.js",
+  "src/services/entity-service.js", "src/services/onboarding-service.js",
 ];
 
 async function filesUnder(directory) {
@@ -60,7 +61,7 @@ for (const file of files.filter((path) => textExtensions.has(extname(path)))) {
 }
 
 const schema = await import(pathToFileURL(resolve(root, "src/database/schema.js")));
-if (schema.STORE_NAMES.length !== 26 || new Set(schema.STORE_NAMES).size !== 26) problems.push("Milestone 2 requires exactly the 26 approved unique IndexedDB stores");
+if (schema.STORE_NAMES.length !== 27 || new Set(schema.STORE_NAMES).size !== 27 || !schema.STORE_NAMES.includes("openingPositions")) problems.push("Milestone 3 requires the 26 foundation stores plus openingPositions");
 
 if (problems.length) {
   console.error(problems.map((problem) => `- ${problem}`).join("\n"));

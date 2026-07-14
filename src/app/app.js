@@ -45,7 +45,7 @@ const ROUTE_CONTENT = Object.freeze({
   },
 });
 
-export function createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter }) {
+export function createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter, onboardingView, entityService }) {
   let latestState = getState();
 
   function applyTheme(preference) {
@@ -99,6 +99,7 @@ export function createApp({ root, header, navigation, main, statusRegion, liveRe
       description: content.description,
       note: content.note,
     }));
+    if (["accounts", "plan", "wealth"].includes(latestState.activeRoute) && entityService) import("../modules/entities/entity-manager.js").then(({ createEntityManager }) => main.append(createEntityManager(latestState.activeRoute, entityService)));
     if (latestState.activeRoute === "more" && securityCenter) main.append(securityCenter);
     if (focus) title.focus({ preventScroll: false });
   }
@@ -125,6 +126,7 @@ export function createApp({ root, header, navigation, main, statusRegion, liveRe
 
   return {
     start() { render(); },
+    showOnboarding() { main.replaceChildren(onboardingView.element); onboardingView.start(); },
     showRoute(route, { focus = true } = {}) {
       document.title = getRouteMetadata(route).title;
       setState({ activeRoute: route });

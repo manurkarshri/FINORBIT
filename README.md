@@ -8,7 +8,7 @@ FinOrbit is a new, independent, local-first personal finance and wealth-manageme
 
 ## Project status
 
-Milestone 2 is implemented on `codex/security-database`: the PWA shell now has a versioned IndexedDB foundation, app lock, audited security operations, and validated standard/encrypted backup and atomic restore. It intentionally contains no onboarding, financial records, or calculations.
+Milestone 3 is implemented on `codex/onboarding`: FinOrbit now provides resumable guided setup, profile preferences, entity configuration and lifecycle management, explicit opening positions, and schema-v2 backup/restore. It intentionally contains no transaction logging, recurrence generation, wealth calculations, reports, or market syncing.
 
 The governing specification is [docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md](docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md).
 
@@ -31,6 +31,7 @@ Version 1 explicitly excludes bank/broker synchronization, cloud sync, multi-use
 - [Changelog](CHANGELOG.md)
 - [PWA foundation operations](docs/PWA_FOUNDATION.md)
 - [Database and security foundation](docs/DATABASE_AND_SECURITY_FOUNDATION.md)
+- [Onboarding and entity management](docs/ONBOARDING_AND_ENTITY_MANAGEMENT.md)
 
 ## Development status
 

@@ -58,3 +58,16 @@
 .lock-dialog::backdrop { background: #08101de6; }
 .lock-dialog form { display: grid; gap: 1rem; }
 .lock-dialog input { min-height: 2.75rem; padding: .5rem .75rem; }
+.onboarding { max-width: 44rem; margin-inline: auto; padding: var(--space-5); }
+.onboarding progress { width: 100%; accent-color: var(--color-accent); }
+.onboarding__progress { font-weight: 700; }
+.field { display: grid; gap: .35rem; margin-block: 1rem; }
+.field label { font-weight: 650; }
+.field input, .field select, .entity-manager input, .entity-manager select { min-height: 2.75rem; padding: .65rem; border: 1px solid var(--color-border); border-radius: .65rem; background: var(--color-surface); color: inherit; }
+.field__error { color: var(--color-danger, #b42318); min-height: 1.25rem; margin: 0; }
+.onboarding__actions, .entity-manager__controls { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+.entity-manager { display: grid; gap: 1.5rem; margin-top: 1.5rem; }
+.entity-manager > section { padding: 1rem; border: 1px solid var(--color-border); border-radius: 1rem; }
+.entity-list { display: grid; gap: .75rem; padding: 0; list-style: none; }
+.entity-list li { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; justify-content: space-between; }
+@media (max-width: 38rem) { .onboarding { padding: var(--space-3); } .onboarding__actions .button { width: 100%; min-height: 3rem; } }
