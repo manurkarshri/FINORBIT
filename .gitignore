@@ -1,0 +1,23 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Dependencies and build/test output
+node_modules/
+dist/
+build/
+coverage/
+.cache/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Temporary document QA/conversion output
+*.tmp
+~$*.docx
