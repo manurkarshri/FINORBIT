@@ -5,8 +5,8 @@ The governing sequence is defined in `docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md`.
 ## Milestone status
 
 - **M0 Repository assessment and specification:** complete; squash-merged in PR #1.
-- **M1 Modular PWA foundation:** implemented on `codex/pwa-foundation`; validation and pull-request review pending.
-- **M2 Database and security foundation:** pending.
+- **M1 Modular PWA foundation:** complete; squash-merged in PR #2.
+- **M2 Database and security foundation:** implemented on `codex/security-database`; draft pull-request review pending.
 - **M3 Guided onboarding and entity management:** pending.
 - **M4 Transaction-first main experience:** pending.
 - **M5 Wealth Impact Engine:** pending.
@@ -54,3 +54,7 @@ Milestone 1 is isolated on `codex/pwa-foundation` and contains only the deployab
 9. Document local static serving, tests, cache invalidation, accessibility checks, and deployment.
 
 Milestone 1 acceptance requires a working mobile/desktop shell, routing, navigation, both themes, valid manifest, registered service worker, offline shell reload after first visit, no console errors, automated checks, and successful GitHub Pages deployment verification. It must not introduce IndexedDB schema or financial features reserved for later milestones.
+
+## Recorded deployment debt
+
+The current GitHub Pages workflow uploads the repository root. A later infrastructure cleanup should build and upload a minimal deployment artifact containing runtime assets only; this is recorded debt and does not expand Milestone 2.

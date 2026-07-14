@@ -17,3 +17,16 @@
 Version 1 will not provide direct financial-institution synchronization, broker login, cloud synchronization, collaborative family accounts, tax filing, automated financial advice/payments, receipt OCR, open banking, lending/insurance sales, or trading. It will not import or maintain compatibility with LedgerBook products.
 
 These limitations change only through an approved specification/roadmap update.
+
+## Milestone 2
+
+- The database stores are empty infrastructure; onboarding and every financial workflow remain deferred to Milestone 3 or later.
+- App lock reduces casual access after locking but is not operating-system authentication, hardware-backed key storage, full database encryption, or protection from a compromised device/extension.
+- IndexedDB metadata, store/index names, record counts, and approximate sizes remain observable. Standard backups deliberately exclude lock credentials.
+- Forgotten lock or backup secrets cannot be recovered by FinOrbit. Browser reset/deletion is not claimed to make data forensically unrecoverable.
+- Restore validates known relationship fields; later milestones must extend reference and financial-invariant validation as they introduce domain records.
+- The Pages workflow currently uploads the repository root instead of a clean runtime-only artifact; cleanup is recorded technical debt.
+- Failed-attempt delay is held in session memory and can be reset by fully reloading the page.
+- JavaScript string secrets cannot be guaranteed to be securely erased from runtime memory.
+- Encrypted backups may restore an earlier app-lock configuration; restore preview identifies this before replacement.
+- A future backup schema version will require a validated backup migration path before active-data replacement.

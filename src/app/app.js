@@ -45,7 +45,7 @@ const ROUTE_CONTENT = Object.freeze({
   },
 });
 
-export function createApp({ root, header, navigation, main, statusRegion, liveRegion }) {
+export function createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter }) {
   let latestState = getState();
 
   function applyTheme(preference) {
@@ -99,6 +99,7 @@ export function createApp({ root, header, navigation, main, statusRegion, liveRe
       description: content.description,
       note: content.note,
     }));
+    if (latestState.activeRoute === "more" && securityCenter) main.append(securityCenter);
     if (focus) title.focus({ preventScroll: false });
   }
 

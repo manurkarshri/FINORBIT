@@ -1,5 +1,6 @@
 import { readFile, readdir, stat } from "node:fs/promises";
 import { extname, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const root = resolve(import.meta.dirname, "..");
 const problems = [];
@@ -8,6 +9,8 @@ const required = [
   "src/app/bootstrap.js", "src/app/app.js", "src/app/router.js", "src/app/state.js",
   "src/components/shell.js", "src/styles/tokens.css", "src/styles/base.css",
   "src/styles/layout.css", "src/styles/components.css", "src/styles/utilities.css",
+  "src/database/schema.js", "src/database/connection.js", "src/security/crypto.js",
+  "src/services/backup-service.js", "src/services/restore-service.js",
 ];
 
 async function filesUnder(directory) {
@@ -56,11 +59,8 @@ for (const file of files.filter((path) => textExtensions.has(extname(path)))) {
   }
 }
 
-const milestoneRuntimeFiles = files.filter((file) => /\.(?:js|html)$/i.test(file));
-for (const file of milestoneRuntimeFiles) {
-  const text = await readFile(file, "utf8");
-  if (/indexedDB\.open|IDBDatabase|IDBTransaction/.test(text)) problems.push(`IndexedDB functionality is excluded from Milestone 1: ${file.slice(root.length + 1)}`);
-}
+const schema = await import(pathToFileURL(resolve(root, "src/database/schema.js")));
+if (schema.STORE_NAMES.length !== 26 || new Set(schema.STORE_NAMES).size !== 26) problems.push("Milestone 2 requires exactly the 26 approved unique IndexedDB stores");
 
 if (problems.length) {
   console.error(problems.map((problem) => `- ${problem}`).join("\n"));

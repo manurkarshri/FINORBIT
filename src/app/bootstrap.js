@@ -2,6 +2,17 @@ import { createApp } from "./app.js";
 import { createRouter } from "./router.js";
 import { readThemePreference, setState } from "./state.js";
 import { createErrorMessage } from "../components/shell.js";
+import { ConnectionManager } from "../database/connection.js";
+import { migrateThemePreference } from "../database/settings.js";
+import { createCoordination } from "../security/coordination.js";
+import { createLockManager } from "../security/lock-manager.js";
+import { createSecurityCenter } from "../modules/security/security-center.js";
+import { getSetting } from "../database/settings.js";
+import { runTransaction } from "../database/transaction.js";
+import { createCredential } from "../security/crypto.js";
+import { createBackup } from "../services/backup-service.js";
+import { parseBackup, restoreBackup } from "../services/restore-service.js";
+import { resetApplicationData } from "../services/reset-service.js";
 
 const safeMessage = "Reload the page. If the problem continues, clear only FinOrbit’s cached site files and try again.";
 
@@ -66,10 +77,29 @@ async function registerServiceWorker() {
   }
 }
 
+function createUnlockDialog(lockManager, mode) {
+  const dialog = document.createElement("dialog");
+  dialog.className = "lock-dialog";
+  const form = document.createElement("form");
+  form.method = "dialog";
+  const title = document.createElement("h1"); title.textContent = "Unlock FinOrbit";
+  const guidance = document.createElement("p"); guidance.textContent = `Enter your ${mode}. FinOrbit cannot recover a forgotten credential.`;
+  const input = document.createElement("input"); input.type = "password"; input.required = true; input.autocomplete = "current-password"; input.setAttribute("aria-label", mode);
+  const status = document.createElement("p"); status.setAttribute("aria-live", "polite");
+  const button = document.createElement("button"); button.type = "submit"; button.className = "button"; button.textContent = "Unlock";
+  form.append(title, guidance, input, button, status); dialog.append(form); document.body.append(dialog);
+  form.addEventListener("submit", async (event) => { event.preventDefault(); button.disabled = true; const valid = await lockManager.unlock(input.value); input.value = ""; button.disabled = false; if (valid) dialog.close(); else status.textContent = "That credential did not match. Try again after a short delay."; });
+  dialog.addEventListener("cancel", (event) => event.preventDefault());
+  return { show() { if (!dialog.open) dialog.showModal(); input.focus(); } };
+}
+
 async function bootstrap() {
   registerGlobalErrorHandling();
   registerSkipLink();
-  setState({ themePreference: readThemePreference() });
+  const databaseManager = new ConnectionManager({ onBlocked: () => reportError("Database upgrade blocked", new Error("Close other FinOrbit tabs and reload.")) });
+  const database = await databaseManager.open();
+  const migratedTheme = await migrateThemePreference(database);
+  setState({ themePreference: migratedTheme ?? readThemePreference() });
   registerConnectivity();
 
   const root = document.querySelector("#app");
@@ -80,7 +110,41 @@ async function bootstrap() {
   const liveRegion = document.querySelector("#live-region");
   if (![root, header, navigation, main, statusRegion, liveRegion].every(Boolean)) throw new Error("Required shell element is missing.");
 
-  const app = createApp({ root, header, navigation, main, statusRegion, liveRegion });
+  const coordination = createCoordination();
+  const credential = await getSetting(database, "security.credential");
+  let unlockDialog;
+  const lockManager = credential ? createLockManager({ credential, coordination, onChange: ({ locked }) => { root.toggleAttribute("data-locked", locked); if (locked) unlockDialog?.show(); } }) : null;
+  if (lockManager) {
+    unlockDialog = createUnlockDialog(lockManager, credential.mode);
+    root.toggleAttribute("data-locked", true);
+    unlockDialog.show();
+    document.addEventListener("visibilitychange", () => lockManager.visibilityChanged(document.hidden));
+    for (const eventName of ["pointerdown", "keydown"]) document.addEventListener(eventName, () => lockManager.activity(), { passive: true });
+  }
+  const securityCenter = createSecurityCenter({
+    onSetup: async (secret, mode) => {
+      const next = await createCredential(secret, mode);
+      await runTransaction(database, ["settings", "auditLogs"], "readwrite", async ({ store }) => {
+        await store("settings").put(next);
+        const instant = new Date().toISOString();
+        await store("auditLogs").add({ id: crypto.randomUUID(), type: "security.setup", detail: { mode }, createdAt: instant, updatedAt: instant, schemaVersion: 1 });
+      });
+    },
+    onLock: () => lockManager?.lock("manual"),
+    onStandardBackup: () => createBackup(database),
+    onEncryptedBackup: (secret) => createBackup(database, { encrypted: true, secret }),
+    onRestorePreview: async (file) => {
+      const secret = file.size ? prompt("If this backup is encrypted, enter its passphrase; otherwise leave blank.") ?? undefined : undefined;
+      const { payload, preview } = await parseBackup(await file.text(), { secret });
+      const lockNotice = preview.restoresAppLock
+        ? " This backup contains an app-lock configuration and will replace the current lock configuration."
+        : " This backup does not contain an app-lock configuration; the current lock configuration will be removed.";
+      if (confirm(`Validated backup from ${preview.exportedAt ?? "unknown date"}.${lockNotice} Replace all local data?`)) await restoreBackup(database, payload);
+      return `Backup validated: ${Object.values(preview.counts).reduce((sum, count) => sum + count, 0)} records.${lockNotice}`;
+    },
+    onReset: async () => { await resetApplicationData({ manager: databaseManager, coordination }); window.location.reload(); },
+  });
+  const app = createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter });
   const router = createRouter({ onRouteChange: (route, options) => app.showRoute(route, options) });
   app.start();
   router.start();
