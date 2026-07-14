@@ -24,6 +24,8 @@ History is newest-first and indexed by date/type/status and major entity/categor
 
 JPEG, PNG, WebP, and PDF receipts are stored separately with stable IDs and validated MIME/size metadata. Limits are 10 MB per file and 50 MB total. Filenames are text only; content is not executed, cached, OCR-processed, or uploaded. Preview data remains local. Standard backups retain metadata but exclude content; `includeReceipts` produces an explicit complete backup. Restore validates transaction references, integer postings, and active effects before replacement.
 
+The one-time PR #5 review URL may use `?preview=1`, which exposes an explicitly labelled synthetic-receipt button solely to make remote browser testing possible without a local file picker. It invokes the same receipt service, storage, history indicator, preview, and deletion paths. The control is absent from normal URLs and production Pages.
+
 ## Schema and security
 
 Schema v3 adds `transactionEffects` and `transactionVersions` and transaction/history indexes described in `DATA_MODEL.md`. The v2→v3 migration preserves onboarding, security/theme settings, opening positions, entities, and audit history, and aborts on failure. Transaction, merchant, note, tag, filename, and receipt data remain ordinary IndexedDB records—not field-encrypted at rest. Optional app lock protects only the visible session; encrypted backups protect exported payloads.
