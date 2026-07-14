@@ -24,7 +24,12 @@ export function validateBackup(payload) {
   for (const name of STORE_NAMES) for (const record of payload.stores[name]) for (const [field, target] of Object.entries(relationships)) {
     if (record[field] != null && !idsByStore.get(target).has(record[field])) throw new Error(`${name}.${field} has a broken reference`);
   }
-  return { schemaVersion: payload.schemaVersion, counts: Object.fromEntries(STORE_NAMES.map((name) => [name, payload.stores[name].length])), exportedAt: payload.exportedAt };
+  return {
+    schemaVersion: payload.schemaVersion,
+    counts: Object.fromEntries(STORE_NAMES.map((name) => [name, payload.stores[name].length])),
+    exportedAt: payload.exportedAt,
+    restoresAppLock: payload.stores.settings.some((record) => record.id === "security.credential"),
+  };
 }
 
 export async function parseBackup(text, { secret, cryptoObject = globalThis.crypto, maxBytes = 25 * 1024 * 1024 } = {}) {

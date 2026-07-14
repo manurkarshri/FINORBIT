@@ -39,13 +39,14 @@ Version 1 explicitly excludes bank/broker synchronization, cloud sync, multi-use
 FinOrbit has no runtime package dependencies. Use Node.js 20 or newer:
 
 ```sh
-npm run serve
+pnpm install --frozen-lockfile
+pnpm run serve
 ```
 
 Open `http://127.0.0.1:4173`. Run all static checks and tests with:
 
 ```sh
-npm run check
+pnpm run check
 ```
 
 See [docs/PWA_FOUNDATION.md](docs/PWA_FOUNDATION.md) for installation, offline testing, cache updates, accessibility checks, browser assumptions, and GitHub Pages deployment.

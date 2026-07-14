@@ -136,8 +136,11 @@ async function bootstrap() {
     onRestorePreview: async (file) => {
       const secret = file.size ? prompt("If this backup is encrypted, enter its passphrase; otherwise leave blank.") ?? undefined : undefined;
       const { payload, preview } = await parseBackup(await file.text(), { secret });
-      if (confirm(`Validated backup from ${preview.exportedAt ?? "unknown date"}. Replace all local data?`)) await restoreBackup(database, payload);
-      return `Backup validated: ${Object.values(preview.counts).reduce((sum, count) => sum + count, 0)} records.`;
+      const lockNotice = preview.restoresAppLock
+        ? " This backup contains an app-lock configuration and will replace the current lock configuration."
+        : " This backup does not contain an app-lock configuration; the current lock configuration will be removed.";
+      if (confirm(`Validated backup from ${preview.exportedAt ?? "unknown date"}.${lockNotice} Replace all local data?`)) await restoreBackup(database, payload);
+      return `Backup validated: ${Object.values(preview.counts).reduce((sum, count) => sum + count, 0)} records.${lockNotice}`;
     },
     onReset: async () => { await resetApplicationData({ manager: databaseManager, coordination }); window.location.reload(); },
   });

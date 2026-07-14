@@ -26,3 +26,7 @@ These limitations change only through an approved specification/roadmap update.
 - Forgotten lock or backup secrets cannot be recovered by FinOrbit. Browser reset/deletion is not claimed to make data forensically unrecoverable.
 - Restore validates known relationship fields; later milestones must extend reference and financial-invariant validation as they introduce domain records.
 - The Pages workflow currently uploads the repository root instead of a clean runtime-only artifact; cleanup is recorded technical debt.
+- Failed-attempt delay is held in session memory and can be reset by fully reloading the page.
+- JavaScript string secrets cannot be guaranteed to be securely erased from runtime memory.
+- Encrypted backups may restore an earlier app-lock configuration; restore preview identifies this before replacement.
+- A future backup schema version will require a validated backup migration path before active-data replacement.

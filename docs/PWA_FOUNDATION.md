@@ -5,7 +5,8 @@
 Use Node.js 20 or newer. No dependency installation or build is required.
 
 ```sh
-npm run serve
+pnpm install --frozen-lockfile
+pnpm run serve
 ```
 
 Open `http://127.0.0.1:4173`. A service worker requires localhost or HTTPS; opening `index.html` directly from disk is unsupported.
@@ -13,7 +14,7 @@ Open `http://127.0.0.1:4173`. A service worker requires localhost or HTTPS; open
 ## Validate
 
 ```sh
-npm run check
+pnpm run check
 ```
 
 This runs static validation, local-link and lightweight secret checks, manifest/icon checks, excluded-IndexedDB checks, and Node unit tests. Browser checks remain a required manual/automation-assisted milestone gate.

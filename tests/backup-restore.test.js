@@ -25,6 +25,15 @@ test("encrypted backup parses only with correct secret", async () => {
   database.close();
 });
 
+test("restore preview discloses backed-up app-lock configuration", async () => {
+  const database = await db();
+  await runTransaction(database, ["settings"], "readwrite", ({ store }) => store("settings").put({ id: "security.credential", verifier: "synthetic", updatedAt: new Date().toISOString() }));
+  const encrypted = await createBackup(database, { encrypted: true, secret: "synthetic phrase" });
+  const { preview } = await parseBackup(JSON.stringify(encrypted), { secret: "synthetic phrase" });
+  assert.equal(preview.restoresAppLock, true);
+  database.close();
+});
+
 test("restore validates before replacing active data", async () => {
   const database = await db();
   await runTransaction(database, ["accounts"], "readwrite", ({ store }) => store("accounts").add({ id: "existing_1", updatedAt: new Date().toISOString() }));

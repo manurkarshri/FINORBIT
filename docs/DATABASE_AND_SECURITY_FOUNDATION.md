@@ -20,6 +20,8 @@ Reset closes the managed connection, requests IndexedDB deletion, clears the non
 
 ## Operations and testing
 
-Run `npm run check`. Automated coverage includes fresh schema creation, indexes, atomic commit/rollback, stable ID validation, PIN/passphrase verification, unique encryption IVs, wrong-secret/tamper rejection, standard/encrypted backup, restore preview validation, and preservation of active data after invalid restore.
+Run `pnpm install --frozen-lockfile` and `pnpm run check`. Automated coverage includes fresh schema creation, indexes, atomic commit/rollback, stable ID validation, PIN/passphrase verification, unique encryption IVs, wrong-secret/tamper rejection, standard/encrypted backup, restore preview validation, and preservation of active data after invalid restore.
 
 Milestone 2 adds one exact development-only dependency: `fake-indexeddb@6.2.5`, used only by Node tests. Runtime remains browser-native.
+
+Failed-attempt delay is held in session memory and a full reload resets it. JavaScript strings are immutable and cannot be guaranteed to be securely erased from runtime memory; locking only releases FinOrbit's live reference. An encrypted backup can contain the prior app-lock settings, and restore preview explicitly warns when restoring it will replace the current lock configuration. Future backup schema versions require an explicit backup-migration path that validates into the supported schema before active data may be replaced.
