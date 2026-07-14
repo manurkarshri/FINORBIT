@@ -1,0 +1,25 @@
+{
+  "id": "./",
+  "name": "FinOrbit — Your Complete Financial World",
+  "short_name": "FinOrbit",
+  "description": "A local-first personal finance and wealth-management Progressive Web Application.",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "start_url": "./#/transactions",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f4f7fb",
+  "theme_color": "#3157d5",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    { "src": "./assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Transactions", "short_name": "Transactions", "description": "Open the Transactions shell", "url": "./#/transactions", "icons": [{ "src": "./assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Accounts", "short_name": "Accounts", "description": "Open the Accounts shell", "url": "./#/accounts", "icons": [{ "src": "./assets/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

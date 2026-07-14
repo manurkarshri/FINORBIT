@@ -4,7 +4,7 @@
 
 FinOrbit Version 1 will be a static, installable PWA built with semantic HTML, modular CSS, and native JavaScript modules. It will be hosted on GitHub Pages, use IndexedDB for durable local data, and keep financial-domain logic independent from UI and persistence. No framework or required backend is approved for Version 1.
 
-This is the target architecture established during Milestone 0; no application code has yet been implemented.
+Milestone 1 implements the application-shell portion of this architecture. Persistence and financial-domain layers remain intentionally absent until their approved milestones.
 
 ## Architectural principles
 
@@ -80,7 +80,9 @@ IndexedDB is the durable source of truth. In-memory state is a disposable projec
 
 ## Routing and deployment
 
-Milestone 1 will use hash-based client routing so deep links work on GitHub Pages without server rewrites. URLs must remain stable and accessible. The service worker will cache only the versioned application shell initially; user financial data remains in IndexedDB and is never placed in Cache Storage.
+Milestone 1 uses hash-based client routing so deep links work on GitHub Pages without server rewrites. The five shell routes are `#/transactions`, `#/accounts`, `#/plan`, `#/wealth`, and `#/more`; unknown hashes canonicalize to Transactions. Route changes update navigation state, document title, and heading focus without full reload.
+
+The service worker caches only the explicit, versioned shell allowlist. It resolves all assets relative to its registration scope for GitHub Pages subpath compatibility. Navigations use an online-first strategy with cached `index.html` fallback; allowlisted static assets use cache-first. No runtime data or external response is cached.
 
 ## Browser and module baseline
 

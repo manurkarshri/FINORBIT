@@ -4,8 +4,8 @@ The governing sequence is defined in `docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md`.
 
 ## Milestone status
 
-- **M0 Repository assessment and specification:** complete in this branch; awaiting pull-request review.
-- **M1 Modular PWA foundation:** proposed, not started.
+- **M0 Repository assessment and specification:** complete; squash-merged in PR #1.
+- **M1 Modular PWA foundation:** implemented on `codex/pwa-foundation`; validation and pull-request review pending.
 - **M2 Database and security foundation:** pending.
 - **M3 Guided onboarding and entity management:** pending.
 - **M4 Transaction-first main experience:** pending.
@@ -39,9 +39,9 @@ The governing sequence is defined in `docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md`.
 14. Complete accessibility, mobile UX, and performance hardening.
 15. Release only after all stated blockers are cleared.
 
-## Milestone 1 proposed implementation
+## Milestone 1 implementation
 
-Milestone 1 should be a separate `codex/pwa-foundation` branch and contain only the deployable foundation:
+Milestone 1 is isolated on `codex/pwa-foundation` and contains only the deployable foundation:
 
 1. Add semantic `index.html` with skip link, landmark structure, app mount points, no inline executable code, and transaction-first loading/empty state.
 2. Add `src/app/bootstrap.js`, `app.js`, `router.js`, and `state.js`; use hash routing for `transactions`, `accounts`, `plan`, `wealth`, and `more`.

@@ -8,7 +8,7 @@ FinOrbit is a new, independent, local-first personal finance and wealth-manageme
 
 ## Project status
 
-Milestone 0 is the current and only completed milestone: repository assessment and specification. The repository contained no prior application files or Git history, so there is no runnable application yet. Implementation begins only after this milestone's pull request is reviewed and Milestone 1 is explicitly authorized.
+Milestone 1 is in progress on `codex/pwa-foundation`: a modular, accessible, installable, offline-capable application shell. It intentionally contains no financial records, setup flows, calculations, or database.
 
 The governing specification is [docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md](docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md).
 
@@ -29,7 +29,22 @@ Version 1 explicitly excludes bank/broker synchronization, cloud sync, multi-use
 - [Known limitations](KNOWN_LIMITATIONS.md)
 - [Contributing](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
+- [PWA foundation operations](docs/PWA_FOUNDATION.md)
 
 ## Development status
 
-There are no runtime dependencies, build steps, tests, or deployable artifacts in Milestone 0. The exact proposed Milestone 1 implementation is documented in [ROADMAP.md](ROADMAP.md#milestone-1-proposed-implementation).
+## Local development
+
+FinOrbit has no runtime package dependencies. Use Node.js 20 or newer:
+
+```sh
+npm run serve
+```
+
+Open `http://127.0.0.1:4173`. Run all static checks and tests with:
+
+```sh
+npm run check
+```
+
+See [docs/PWA_FOUNDATION.md](docs/PWA_FOUNDATION.md) for installation, offline testing, cache updates, accessibility checks, browser assumptions, and GitHub Pages deployment.

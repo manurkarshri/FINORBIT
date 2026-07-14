@@ -40,6 +40,10 @@ FinOrbit must never store full card numbers, CVVs, banking or broker passwords, 
 
 PIN/password and auto-lock behavior will be designed in Milestone 2. Until then, no claim of at-rest application encryption is permitted. Locking must clear decrypted in-memory state and must not imply protection against an already-compromised device.
 
+## Milestone 1 security impact
+
+The application shell stores only the non-sensitive theme choice in `localStorage`. It uses no IndexedDB, financial data, API key, external API, browser permission, authentication, or encryption. A restrictive document Content Security Policy permits only same-origin scripts, styles, images, connections, manifest, and worker resources. Cache Storage contains the explicit static shell allowlist only.
+
 ## Security review gates
 
 Every milestone report states new sensitive data, permissions, network connections, risks, and mitigations. Critical findings block release. No secrets may appear in commits. Security and recovery behavior require automated negative tests plus manual browser tests before Version 1.

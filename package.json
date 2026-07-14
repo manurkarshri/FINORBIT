@@ -1,0 +1,16 @@
+{
+  "name": "finorbit",
+  "version": "1.0.0-m1",
+  "private": true,
+  "type": "module",
+  "description": "FinOrbit local-first personal finance PWA foundation",
+  "scripts": {
+    "serve": "node scripts/serve.mjs",
+    "test": "node --test",
+    "validate": "node scripts/validate-static.mjs",
+    "check": "npm run validate && npm test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

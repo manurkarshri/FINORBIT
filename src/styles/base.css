@@ -1,0 +1,11 @@
+*, *::before, *::after { box-sizing: border-box; }
+html { min-height: 100%; background: var(--color-canvas); font-family: var(--font-sans); }
+body { min-width: 20rem; min-height: 100vh; min-height: 100dvh; margin: 0; color: var(--color-text); background: radial-gradient(circle at 85% -10%, var(--color-canvas-accent), transparent 32rem), var(--color-canvas); line-height: 1.55; }
+button, select { font: inherit; }
+a { color: inherit; }
+button, a, select { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+h1, h2, p { margin-top: 0; }
+h1, h2 { line-height: 1.08; text-wrap: balance; }
+button { color: inherit; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
