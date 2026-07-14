@@ -26,6 +26,15 @@ These limitations change only through an approved specification/roadmap update.
 - Day-of-month values permit 1–31; later recurrence logic must define behavior in shorter months.
 - Opening estimates are user-entered and may be stale. No automatic price, depreciation, amortization, or rental-income behavior exists.
 
+## Milestone 4
+
+- Transactions and receipt content are not field-encrypted at rest. App lock is not device or database encryption.
+- Projections cover opening positions plus active transaction postings; there is no net-worth trend, wealth-change explanation, market appreciation, asset allocation, or investment performance engine.
+- Investment sales preserve proceeds/cost-position inputs but do not calculate tax lots, gains, or taxes.
+- Reconciliation state is stored but no reconciliation workflow exists. Recurring templates still generate no occurrences or reminders.
+- Standard backups omit receipt content unless complete receipt inclusion is explicitly requested. Receipt storage is limited to 10 MB per file and 50 MB total.
+- Categories are a minimal default logging set; full category management and budgets remain Milestone 7.
+
 ## Milestone 2
 
 - The database stores are empty infrastructure; onboarding and every financial workflow remain deferred to Milestone 3 or later.

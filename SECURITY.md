@@ -50,6 +50,10 @@ The application shell stores only the non-sensitive theme choice in `localStorag
 
 Profiles, entity labels, institution/lender labels, last four digits, financial configuration, opening positions, dates, and free-text notes are stored in IndexedDB and included in backups. These entity records are not field-encrypted at rest; do not claim otherwise. Encrypted backups protect the exported payload, while optional app lock is only a session-access control. Full account/card numbers, CVV, credentials, PINs, PAN, Aadhaar, exact property addresses, and unnecessary identity fields are rejected or never requested. No external connection or new production dependency is introduced.
 
+## Milestone 4 transaction and receipt protection
+
+Transactions, effects, merchant/source text, notes, tags, filenames, and receipt content are sensitive ordinary IndexedDB records and are not field-encrypted at rest. App lock protects the visible interface only. User text is rendered with `textContent`; receipt types and 10 MB/file and 50 MB/total limits are enforced; uploads are never executed, cached, analyzed, or transmitted. Standard backups omit receipt content by default; complete backup inclusion is explicit. No analytics, telemetry, OCR, external upload, or market request exists.
+
 ## Security review gates
 
 Every milestone report states new sensitive data, permissions, network connections, risks, and mitigations. Critical findings block release. No secrets may appear in commits. Security and recovery behavior require automated negative tests plus manual browser tests before Version 1.

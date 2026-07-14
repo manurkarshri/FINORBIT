@@ -53,3 +53,9 @@ Schema version 1 maps each of the 26 approved logical boundaries to its own obje
 Schema version 2 preserves all 26 stores and adds `openingPositions`, indexed by `entityId` and `effectiveDate`. Profiles, accounts, cards, loans, recurring rules, investments, properties, and vehicles add `status` and normalized `nameKey` indexes for active/status filtering and duplicate-name lookup. Opening records contain stable entity ID/type, integer-paise value, effective date, source (`onboarding` or `manual`), timestamps, and audit linkage. Investment quantities persist as non-negative decimal strings; persisted money never uses binary floating point.
 
 Income sources and commitment templates share `recurringRules` with an explicit `kind`; neither creates `recurringOccurrences`. Archive is reversible and hard deletion is not the normal lifecycle. Closed/sold entities remain readable.
+
+## Milestone 4 physical schema
+
+Schema version 3 adds `transactionEffects` and `transactionVersions`, bringing the physical total to 29 stores. Effects index `transactionId`, `entityId`, and `dimension`; versions index `transactionId` and `createdAt`. Transactions index accounting date, type, status, source/destination account, card, loan, investment, category, and replacement linkage. Receipts and splits index transaction ID.
+
+Transactions contain integer-paise amount, INR, accounting date/time, type/status, stable entity/category/merchant relationships and snapshots, notes/tags, receipt IDs, reconciliation state, recurrence/original/replacement links, and timestamps. Effects carry signed integer paise and an explicit dimension/classification. Split totals must equal the aggregate total. Voided records remain readable; only active effects contribute to projections.

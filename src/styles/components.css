@@ -71,3 +71,16 @@
 .entity-list { display: grid; gap: .75rem; padding: 0; list-style: none; }
 .entity-list li { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; justify-content: space-between; }
 @media (max-width: 38rem) { .onboarding { padding: var(--space-3); } .onboarding__actions .button { width: 100%; min-height: 3rem; } }
+.transaction-center { display: grid; gap: 1.25rem; }
+.transaction-center__header { display: grid; gap: .75rem; }
+.transaction-center__add { min-height: 3.5rem; font-size: 1.1rem; justify-self: start; }
+.transaction-quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .65rem; }
+.transaction-form { position: fixed; inset: 0; z-index: 20; overflow: auto; padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); background: var(--color-background); }
+.transaction-form form { max-width: 42rem; margin-inline: auto; }
+.transaction-form__actions, .transaction-list__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.transaction-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .75rem; align-items: end; }
+.transaction-list { display: grid; gap: .75rem; padding: 0; list-style: none; }
+.transaction-list__item { display: grid; gap: .75rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: .85rem; }
+.transaction-list__item.is-voided { opacity: .65; text-decoration: line-through; }
+.transaction-summary { padding: 1rem; border-radius: .85rem; background: var(--color-surface); }
+@media (max-width: 38rem) { .transaction-center__add, .transaction-form__actions .button { width: 100%; min-height: 3rem; } }

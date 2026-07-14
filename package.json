@@ -1,6 +1,6 @@
 {
   "name": "finorbit",
-  "version": "1.0.0-m3",
+  "version": "1.0.0-m4",
   "private": true,
   "packageManager": "pnpm@11.7.0",
   "type": "module",

@@ -16,6 +16,9 @@ import { resetApplicationData } from "../services/reset-service.js";
 import { createEntityService } from "../services/entity-service.js";
 import { createOnboardingService } from "../services/onboarding-service.js";
 import { createOnboarding } from "../modules/onboarding/onboarding.js";
+import { createTransactionService, ensureDefaultCategories } from "../services/transaction-service.js";
+import { createReceiptService } from "../services/receipt-service.js";
+import { createTransactionCenter } from "../modules/transactions/transaction-center.js";
 
 const safeMessage = "Reload the page. If the problem continues, clear only FinOrbit’s cached site files and try again.";
 
@@ -101,6 +104,7 @@ async function bootstrap() {
   registerSkipLink();
   const databaseManager = new ConnectionManager({ onBlocked: () => reportError("Database upgrade blocked", new Error("Close other FinOrbit tabs and reload.")) });
   const database = await databaseManager.open();
+  await ensureDefaultCategories(database);
   const migratedTheme = await migrateThemePreference(database);
   setState({ themePreference: migratedTheme ?? readThemePreference() });
   registerConnectivity();
@@ -151,7 +155,10 @@ async function bootstrap() {
   const onboardingService = createOnboardingService(database);
   let app;
   const onboardingView = createOnboarding({ onboarding: onboardingService, entities: entityService, onExit: () => app.showRoute("accounts"), onComplete: () => app.showRoute("accounts") });
-  app = createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter, onboardingView, entityService });
+  const transactionService = createTransactionService(database);
+  const receiptService = createReceiptService(database);
+  const transactionCenter = createTransactionCenter({ database, transactions: transactionService, receipts: receiptService, liveRegion });
+  app = createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter, onboardingView, entityService, transactionCenter });
   const router = createRouter({ onRouteChange: (route, options) => app.showRoute(route, options) });
   app.start();
   router.start();

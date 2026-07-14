@@ -23,6 +23,10 @@ All notable changes to FinOrbit are documented here. The project follows milesto
 - Account, card, loan, income, commitment, investment, property, and vehicle configuration with shared validation and lifecycle actions.
 - Schema v2 migration and dedicated audited opening-position records, with exact decimal-string investment quantities.
 - Entity-aware backup/restore counts and mobile-first offline-cached onboarding modules.
+- Transaction-first home, adaptive mobile form, quick actions, history search/filter, upcoming-template summary, and Indian currency formatting.
+- Explicit 21-type posting engine with atomic transaction/effect/split/version/audit persistence and opening-position projections.
+- Replacement editing, duplicate, void/restore protections, safe receipt lifecycle, default transaction categories, and merchant snapshots.
+- Schema v3 transaction effect/version stores and indexed history/reference queries.
 
 ### Confirmed
 

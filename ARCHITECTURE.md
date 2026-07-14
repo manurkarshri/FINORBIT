@@ -8,6 +8,8 @@ Milestone 3 adds application services for onboarding and entity commands above t
 
 Opening balances and opening asset/liability estimates are dedicated `openingPositions` records linked to stable entity and audit IDs. They are starting facts, never synthetic transactions, income, or expenses.
 
+Milestone 4 introduces a transaction aggregate above IndexedDB. A command validates its type-specific fields and references, derives explicit postings through the pure posting engine, and writes transaction, effects, splits, immutable version snapshot, merchant snapshot, and audit events in one transaction. Projections fold opening positions with active effects; accounts are never mutated as an untraceable balance cache. Replacement editing creates a linked transaction while deactivating original effects atomically. Void/restore toggles one existing effect set and prevents duplicate application.
+
 ## Architectural principles
 
 1. Local-first: all core workflows function without a server or account.

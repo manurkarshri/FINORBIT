@@ -13,7 +13,7 @@ test("standard backup excludes lock credentials", async () => {
   await runTransaction(database, ["settings"], "readwrite", ({ store }) => store("settings").put({ id: "security.credential", verifier: "private", updatedAt: new Date().toISOString() }));
   const backup = await createBackup(database);
   assert.equal(backup.stores.settings.length, 0);
-  assert.equal(Object.keys(backup.stores).length, 27);
+  assert.equal(Object.keys(backup.stores).length, 29);
   database.close();
 });
 

@@ -7,8 +7,8 @@ The governing sequence is defined in `docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md`.
 - **M0 Repository assessment and specification:** complete; squash-merged in PR #1.
 - **M1 Modular PWA foundation:** complete; squash-merged in PR #2.
 - **M2 Database and security foundation:** complete; squash-merged in PR #3.
-- **M3 Guided onboarding and entity management:** implemented on `codex/onboarding`; draft pull-request review pending.
-- **M4 Transaction-first main experience:** pending.
+- **M3 Guided onboarding and entity management:** complete; squash-merged in PR #4.
+- **M4 Transaction-first main experience:** implemented on `codex/transactions`; draft pull-request review pending.
 - **M5 Wealth Impact Engine:** pending.
 - **M6 Recurring income, expenses and reminders:** pending.
 - **M7 Categories, family and budgets:** pending.

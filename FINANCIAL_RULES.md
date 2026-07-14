@@ -45,3 +45,8 @@ Editing a financial event must recalculate all dependent effects atomically. Des
 ## Test oracle examples
 
 The canonical examples in the governing plan—₹2,000 grocery expense, ₹10,000 transfer, ₹5,000 card purchase/payment, ₹10,000 mutual-fund purchase, ₹20,000 EMI split into ₹15,000 principal and ₹5,000 interest, ₹1,000 refund, and ₹5,00,000 vehicle purchase—form the first calculation test matrix in Milestone 5, with foundational value-object tests introduced earlier.
+# Milestone 4 posting rules
+
+Transaction types do not share a generic cash-flow shortcut. Expense reduces a source asset and records expense; income increases a destination asset and records income; transfers move equal value without income/expense; card purchase increases liability and expense; card payment reduces bank asset and card liability; loan disbursement increases cash and liability; loan payment separates principal from interest/fees; investment and physical-asset purchases convert cash to assets with explicit fees/taxes; sale records preserve proceeds and cost-position inputs; refunds reduce prior expense; balance correction is an audited non-income/expense adjustment.
+
+Loan principal + interest + fees must equal total outflow. Splits use integer paise and must total exactly. Projections equal opening position plus active effects. Replacement, void, and restore must never apply two active effect sets for the same effective transaction meaning.
