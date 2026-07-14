@@ -1,4 +1,4 @@
-const CACHE_VERSION = "finorbit-shell-v3";
+const CACHE_VERSION = "finorbit-shell-v4";
 const SCOPE_URL = new URL(self.registration.scope);
 const toScopeUrl = (path) => new URL(path, SCOPE_URL).href;
 
@@ -26,12 +26,16 @@ const SHELL_ASSETS = [
   "./src/database/validation.js",
   "./src/database/audit.js",
   "./src/modules/security/security-center.js",
+  "./src/modules/onboarding/onboarding.js",
+  "./src/modules/entities/entity-manager.js",
   "./src/security/coordination.js",
   "./src/security/crypto.js",
   "./src/security/lock-manager.js",
   "./src/services/backup-service.js",
   "./src/services/restore-service.js",
   "./src/services/reset-service.js",
+  "./src/services/entity-service.js",
+  "./src/services/onboarding-service.js",
   "./src/styles/tokens.css",
   "./src/styles/base.css",
   "./src/styles/layout.css",

@@ -5,16 +5,16 @@ import { openDatabase } from "../src/database/connection.js";
 import { STORE_NAMES } from "../src/database/schema.js";
 import { runTransaction } from "../src/database/transaction.js";
 import { createStoreRepository } from "../src/database/repository.js";
-import { runMigrations } from "../src/database/migrations.js";
+import { MIGRATIONS, runMigrations } from "../src/database/migrations.js";
 import { migrateThemePreference } from "../src/database/settings.js";
 
 async function database(name = crypto.randomUUID()) { return openDatabase({ indexedDB: new IDBFactory(), name }); }
 
-test("fresh database creates exactly the 26 approved stores with required indexes", async () => {
+test("fresh schema v2 creates foundation and opening-position stores with entity indexes", async () => {
   const db = await database();
   assert.deepEqual([...db.objectStoreNames], [...STORE_NAMES].sort());
   const tx = db.transaction(["accounts", "auditLogs"]);
-  assert.deepEqual([...tx.objectStore("accounts").indexNames], ["byArchived", "byUpdatedAt"]);
+  assert.deepEqual([...tx.objectStore("accounts").indexNames], ["byArchived", "byNameKey", "byStatus", "byUpdatedAt"]);
   assert.deepEqual([...tx.objectStore("auditLogs").indexNames], ["byCreatedAt", "byType"]);
   db.close();
 });
@@ -55,6 +55,22 @@ test("migrations run in version order and skip completed versions", () => {
 
 test("failed migration remains visible to the upgrade transaction", () => {
   assert.throws(() => runMigrations({ database: {}, transaction: {}, oldVersion: 0, newVersion: 1, migrations: [{ version: 1, run: () => { throw new Error("fixture failed"); } }] }), /fixture failed/);
+});
+
+test("schema 1 upgrades to schema 2 while preserving security settings and audit history", async () => {
+  const indexedDB = new IDBFactory(); const name = crypto.randomUUID();
+  const v1 = await openDatabase({ indexedDB, name, version: 1, migrations: [MIGRATIONS[0]] });
+  await runTransaction(v1, ["settings", "auditLogs"], "readwrite", async ({ store }) => { await store("settings").put({ id: "security.credential", mode: "PIN", updatedAt: new Date().toISOString() }); await store("auditLogs").put({ id: "audit_old", type: "security.setup", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }); }); v1.close();
+  const v2 = await openDatabase({ indexedDB, name });
+  assert.equal((await runTransaction(v2, ["settings"], "readonly", ({ store }) => store("settings").get("security.credential"))).mode, "PIN");
+  assert.equal(await runTransaction(v2, ["auditLogs"], "readonly", ({ store }) => store("auditLogs").count()), 1); assert.equal(v2.objectStoreNames.contains("openingPositions"), true); v2.close();
+});
+
+test("failed schema 2 upgrade aborts without replacing schema 1 data", async () => {
+  const indexedDB = new IDBFactory(); const name = crypto.randomUUID(); const v1 = await openDatabase({ indexedDB, name, version: 1, migrations: [MIGRATIONS[0]] });
+  await runTransaction(v1, ["settings"], "readwrite", ({ store }) => store("settings").put({ id: "theme.preference", value: "dark", updatedAt: new Date().toISOString() })); v1.close();
+  await assert.rejects(openDatabase({ indexedDB, name, version: 2, migrations: [MIGRATIONS[0], { version: 2, run() { throw new Error("synthetic migration failure"); } }] }));
+  const reopened = await openDatabase({ indexedDB, name, version: 1, migrations: [MIGRATIONS[0]] }); assert.equal((await runTransaction(reopened, ["settings"], "readonly", ({ store }) => store("settings").get("theme.preference"))).value, "dark"); reopened.close();
 });
 
 test("theme preference migrates from localStorage once", async () => {

@@ -14,6 +14,22 @@ export const MIGRATIONS = Object.freeze([
       }
     },
   },
+  {
+    version: 2,
+    description: "Add explicit opening positions and entity query indexes",
+    run({ database, transaction }) {
+      const definition = STORE_DEFINITIONS.openingPositions;
+      if (!database.objectStoreNames.contains("openingPositions")) {
+        const store = database.createObjectStore("openingPositions", { keyPath: definition.keyPath });
+        for (const index of definition.indexes) store.createIndex(index.name, index.keyPath, { unique: false });
+      }
+      for (const name of ["profiles", "accounts", "creditCards", "loans", "recurringRules", "investments", "properties", "vehicles"]) {
+        const store = transaction.objectStore(name);
+        if (!store.indexNames.contains("byStatus")) store.createIndex("byStatus", "status", { unique: false });
+        if (!store.indexNames.contains("byNameKey")) store.createIndex("byNameKey", "nameKey", { unique: false });
+      }
+    },
+  },
 ]);
 
 export function runMigrations({ database, transaction, oldVersion, newVersion, migrations = MIGRATIONS }) {

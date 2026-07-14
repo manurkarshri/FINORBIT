@@ -13,6 +13,9 @@ import { createCredential } from "../security/crypto.js";
 import { createBackup } from "../services/backup-service.js";
 import { parseBackup, restoreBackup } from "../services/restore-service.js";
 import { resetApplicationData } from "../services/reset-service.js";
+import { createEntityService } from "../services/entity-service.js";
+import { createOnboardingService } from "../services/onboarding-service.js";
+import { createOnboarding } from "../modules/onboarding/onboarding.js";
 
 const safeMessage = "Reload the page. If the problem continues, clear only FinOrbit’s cached site files and try again.";
 
@@ -144,10 +147,15 @@ async function bootstrap() {
     },
     onReset: async () => { await resetApplicationData({ manager: databaseManager, coordination }); window.location.reload(); },
   });
-  const app = createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter });
+  const entityService = createEntityService(database);
+  const onboardingService = createOnboardingService(database);
+  let app;
+  const onboardingView = createOnboarding({ onboarding: onboardingService, entities: entityService, onExit: () => app.showRoute("accounts"), onComplete: () => app.showRoute("accounts") });
+  app = createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter, onboardingView, entityService });
   const router = createRouter({ onRouteChange: (route, options) => app.showRoute(route, options) });
   app.start();
   router.start();
+  if (!(await onboardingService.read()).completed) app.showOnboarding();
   await registerServiceWorker();
 }
 

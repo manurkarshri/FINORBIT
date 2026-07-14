@@ -18,6 +18,14 @@ Version 1 will not provide direct financial-institution synchronization, broker 
 
 These limitations change only through an approved specification/roadmap update.
 
+## Milestone 3
+
+- Entity data and notes are stored locally but are not field-encrypted at rest. App lock does not change this protection level.
+- Setup values are configuration and opening positions only. There is no transaction entry/history, recurring occurrence generation, net-worth or gain calculation, report, forecast, reconciliation, reminder, market API, or cloud sync.
+- Duplicate names produce guidance but remain allowed. Warning-only conditions such as over-limit cards and loan principal above original principal remain intentional user choices.
+- Day-of-month values permit 1–31; later recurrence logic must define behavior in shorter months.
+- Opening estimates are user-entered and may be stale. No automatic price, depreciation, amortization, or rental-income behavior exists.
+
 ## Milestone 2
 
 - The database stores are empty infrastructure; onboarding and every financial workflow remain deferred to Milestone 3 or later.
