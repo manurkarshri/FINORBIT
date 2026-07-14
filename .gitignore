@@ -11,6 +11,8 @@ dist/
 build/
 coverage/
 .cache/
+__pycache__/
+*.py[cod]
 
 # Editors and operating systems
 .idea/
