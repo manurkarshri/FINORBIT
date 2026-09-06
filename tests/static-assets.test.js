@@ -64,3 +64,13 @@ test("transaction UI retains mobile input and bounded-rendering safeguards", asy
   assert.match(service, /filters\.limit/); assert.match(service, /: 200/);
   assert.match(styles, /min-width: 0/);
 });
+
+test("settings supports repeatable financial setup in rupees", async () => {
+  const settings = await readFile(resolve(root, "src/modules/settings/settings-center.js"), "utf8");
+  const onboarding = await readFile(resolve(root, "src/modules/onboarding/onboarding.js"), "utf8");
+  for (const label of ["Bank, cash and wallet accounts", "Credit cards", "Loans", "Income sources", "Recurring commitments", "Investments and broker holdings"]) assert.ok(settings.includes(label));
+  for (const field of ["Original loan amount (₹)", "Current outstanding principal (₹)", "Current annual interest rate (%)", "EMI payment day", "Remaining tenure (months)", "Broker account nickname"]) assert.ok(settings.includes(field));
+  assert.match(onboarding, /Save and add another/);
+  assert.match(onboarding, /Save and continue/);
+  assert.doesNotMatch(onboarding, /Opening balance \(paise\)/);
+});

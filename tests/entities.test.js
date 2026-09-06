@@ -37,6 +37,16 @@ test("card over-limit and loan excess-principal are non-blocking warnings", asyn
   const loan = await service.save("loan", { nickname: "Home", loanType: "home", originalPrincipalPaise: 100, outstandingPrincipalPaise: 110, status: "active", includeInNetWorth: true }); assert.equal(loan.ok, true); assert.equal(loan.warnings.length, 1); database.close();
 });
 
+test("loan setup persists rate, EMI dates, and remaining tenure", async () => {
+  const { database, service } = await fixture();
+  const result = await service.save("loan", { nickname: "Home loan", lender: "Bank", loanType: "home", originalPrincipalPaise: 50000000, outstandingPrincipalPaise: 42000000, annualInterestRateBasisPoints: 850, rateType: "floating", emiPaise: 450000, emiDay: 5, startDate: "2024-01-05", expectedEndDate: "2039-01-05", remainingTenureMonths: 148, status: "active", includeInNetWorth: true });
+  assert.equal(result.ok, true);
+  assert.deepEqual({ rate: result.record.annualInterestRateBasisPoints, emi: result.record.emiPaise, day: result.record.emiDay, tenure: result.record.remainingTenureMonths }, { rate: 850, emi: 450000, day: 5, tenure: 148 });
+  assert.ok(validateEntity("loan", { ...result.record, annualInterestRateBasisPoints: -1 }).annualInterestRateBasisPoints);
+  assert.ok(validateEntity("loan", { ...result.record, expectedEndDate: "2023-01-01" }).expectedEndDate);
+  database.close();
+});
+
 test("decimal investment quantity persists exactly and asset references remain configuration", async () => {
   const { database, service } = await fixture(); const result = await service.save("investment", { name: "Index fund", assetClass: "mutual-fund", quantity: "12.3400", openingEstimatedValuePaise: 500000, valuationDate: "2026-07-15", includeInNetWorth: false, status: "active" });
   assert.equal(result.record.quantity, "12.3400"); assert.equal(result.record.openingEstimatedValuePaise, 500000); assert.equal(result.record.includeInNetWorth, false); database.close();

@@ -6,6 +6,7 @@ export const ROUTES = Object.freeze({
   plan: { label: "Plan", title: "Plan · FinOrbit" },
   wealth: { label: "Wealth", title: "Wealth · FinOrbit" },
   more: { label: "More", title: "More · FinOrbit" },
+  settings: { label: "Settings", title: "Settings · FinOrbit" },
 });
 
 export function parseRoute(hash = "") {

@@ -7,6 +7,7 @@ const ICONS = {
   plan: "◇",
   wealth: "◌",
   more: "•••",
+  settings: "⚙",
 };
 
 function element(tag, attributes = {}, children = []) {

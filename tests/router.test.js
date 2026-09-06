@@ -18,3 +18,8 @@ test("normalizes route query fragments without changing metadata", () => {
   assert.deepEqual(getRouteMetadata("wealth"), { label: "Wealth", title: "Wealth · FinOrbit" });
   assert.deepEqual(getRouteMetadata("unknown"), ROUTES.transactions);
 });
+
+test("settings is a permanent first-class route", () => {
+  assert.equal(parseRoute("#/settings"), "settings");
+  assert.deepEqual(getRouteMetadata("settings"), { label: "Settings", title: "Settings · FinOrbit" });
+});
