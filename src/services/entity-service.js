@@ -26,6 +26,12 @@ export function validateEntity(type, record) {
   for (const field of ["lastFour"]) rules[field] = [optional(isLastFour, "Enter exactly four digits.")];
   for (const field of ["statementDay", "dueDay", "emiDay", "expectedDay", "dueDayOfMonth"]) rules[field] = [optional(isDayOfMonth, "Enter a day from 1 to 31.")];
   for (const field of ["startDate", "expectedEndDate", "valuationDate", "purchaseDate", "effectiveDate"]) rules[field] = [optional(isIsoDate, "Enter a valid date.")];
+  if (type === "loan") {
+    rules.annualInterestRateBasisPoints = [optional((value) => Number.isInteger(value) && value >= 0 && value <= 100000, "Enter an annual interest rate from 0% to 1000%.")];
+    rules.remainingTenureMonths = [optional((value) => Number.isInteger(value) && value >= 0 && value <= 1200, "Enter remaining tenure from 0 to 1200 months.")];
+    rules.rateType = [optional((value) => ["fixed", "floating"].includes(value), "Choose fixed or floating interest.")];
+    if (record.startDate && record.expectedEndDate && record.expectedEndDate < record.startDate) rules.expectedEndDate = [() => "Expected end date cannot be before the loan start date."];
+  }
   if (type === "investment") rules.quantity = [required, optional(isDecimalString, "Use a non-negative decimal written as text.")];
   if (type === "property") rules.ownershipPercentage = [required, optional((v) => typeof v === "number" && v > 0 && v <= 100, "Enter a percentage above 0 and at most 100.")];
   if (["property", "vehicle"].includes(type)) {

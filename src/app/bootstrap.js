@@ -36,6 +36,7 @@ import { createReportService } from "../services/report-service.js";
 import { createReportsCenter } from "../modules/reports/reports-center.js";
 import { createReconciliationService } from "../services/reconciliation-service.js";
 import { createReconciliationCenter } from "../modules/reconciliation/reconciliation-center.js";
+import { createSettingsCenter } from "../modules/settings/settings-center.js";
 import { createStorageHealthService } from "../services/storage-health-service.js";
 
 const safeMessage = "Reload the page. If the problem continues, clear only FinOrbit’s cached site files and try again.";
@@ -190,7 +191,8 @@ async function bootstrap() {
   const planningCenter = createPlanningCenter({ planning: createPlanningService(database, { transactions: transactionService, recurring: createRecurringService(database, { transactions: transactionService }) }), liveRegion });
   const reportsCenter = createReportsCenter({ reports: createReportService(database), liveRegion });
   const reconciliationCenter = createReconciliationCenter({ reconciliation: createReconciliationService(database, { transactions: transactionService }), liveRegion });
-  app = createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter, onboardingView, entityService, transactionCenter, wealthCenter, portfolioCenter, physicalAssetsCenter, recurringCenter, householdCenter, planningCenter, reportsCenter, reconciliationCenter });
+  const settingsCenter = createSettingsCenter({ entities: entityService, liveRegion });
+  app = createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter, onboardingView, entityService, settingsCenter, transactionCenter, wealthCenter, portfolioCenter, physicalAssetsCenter, recurringCenter, householdCenter, planningCenter, reportsCenter, reconciliationCenter });
   const router = createRouter({ onRouteChange: (route, options) => app.showRoute(route, options) });
   app.start();
   router.start();
