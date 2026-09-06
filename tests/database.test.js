@@ -10,13 +10,23 @@ import { migrateThemePreference } from "../src/database/settings.js";
 
 async function database(name = crypto.randomUUID()) { return openDatabase({ indexedDB: new IDBFactory(), name }); }
 
-test("fresh schema v2 creates foundation and opening-position stores with entity indexes", async () => {
+test("fresh schema v3 creates entity and transaction stores with required indexes", async () => {
   const db = await database();
   assert.deepEqual([...db.objectStoreNames], [...STORE_NAMES].sort());
   const tx = db.transaction(["accounts", "auditLogs"]);
   assert.deepEqual([...tx.objectStore("accounts").indexNames], ["byArchived", "byNameKey", "byStatus", "byUpdatedAt"]);
   assert.deepEqual([...tx.objectStore("auditLogs").indexNames], ["byCreatedAt", "byType"]);
   db.close();
+});
+
+test("schema 2 upgrades to schema 3 preserving onboarding, openings, security and audit", async () => {
+  const indexedDB = new IDBFactory(); const name = crypto.randomUUID(); const instant = new Date().toISOString();
+  const v2 = await openDatabase({ indexedDB, name, version: 2, migrations: MIGRATIONS.slice(0, 2) }); await runTransaction(v2, ["settings", "openingPositions", "auditLogs"], "readwrite", async ({ store }) => { await store("settings").put({ id: "onboarding.progress", stage: 12, completed: true, updatedAt: instant }); await store("settings").put({ id: "security.credential", mode: "PIN", updatedAt: instant }); await store("openingPositions").put({ id: "opening_keep", entityId: "account_keep", amountPaise: 1, effectiveDate: "2026-07-01", updatedAt: instant }); await store("auditLogs").put({ id: "audit_keep", type: "onboarding.completed", createdAt: instant, updatedAt: instant }); }); v2.close();
+  const v3 = await openDatabase({ indexedDB, name }); assert.equal((await runTransaction(v3, ["settings"], "readonly", ({ store }) => store("settings").get("onboarding.progress"))).completed, true); assert.equal(await runTransaction(v3, ["openingPositions"], "readonly", ({ store }) => store("openingPositions").count()), 1); assert.equal(await runTransaction(v3, ["auditLogs"], "readonly", ({ store }) => store("auditLogs").count()), 1); assert.equal(v3.objectStoreNames.contains("transactionEffects"), true); v3.close();
+});
+
+test("failed schema 3 migration rolls back and leaves schema 2 readable", async () => {
+  const indexedDB = new IDBFactory(); const name = crypto.randomUUID(); const v2 = await openDatabase({ indexedDB, name, version: 2, migrations: MIGRATIONS.slice(0, 2) }); v2.close(); await assert.rejects(openDatabase({ indexedDB, name, version: 3, migrations: [...MIGRATIONS.slice(0, 2), { version: 3, run() { throw new Error("v3 failed"); } }] })); const reopened = await openDatabase({ indexedDB, name, version: 2, migrations: MIGRATIONS.slice(0, 2) }); assert.equal(reopened.objectStoreNames.contains("transactionEffects"), false); reopened.close();
 });
 
 test("multi-store transaction commits atomically", async () => {

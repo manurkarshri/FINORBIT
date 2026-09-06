@@ -20,10 +20,16 @@ export function validateBackup(payload) {
       idsByStore.get(name).add(record.id);
     }
   }
-  const relationships = { profileId: "profiles", accountId: "accounts", creditCardId: "creditCards", loanId: "loans", transactionId: "transactions", categoryId: "categories", subcategoryId: "subcategories", familyMemberId: "familyMembers", merchantId: "merchants", investmentId: "investments", propertyId: "properties", vehicleId: "vehicles", budgetId: "budgets", goalId: "goals" };
+  const relationships = { profileId: "profiles", accountId: "accounts", sourceAccountId: "accounts", destinationAccountId: "accounts", creditCardId: "creditCards", loanId: "loans", transactionId: "transactions", originalTransactionId: "transactions", replacementOfId: "transactions", replacedById: "transactions", categoryId: "categories", subcategoryId: "subcategories", familyMemberId: "familyMembers", merchantId: "merchants", investmentId: "investments", propertyId: "properties", vehicleId: "vehicles", budgetId: "budgets", goalId: "goals" };
   for (const name of STORE_NAMES) for (const record of payload.stores[name]) for (const [field, target] of Object.entries(relationships)) {
     if (record[field] != null && !idsByStore.get(target).has(record[field])) throw new Error(`${name}.${field} has a broken reference`);
   }
+  for (const posting of payload.stores.transactionEffects ?? []) {
+    if (!Number.isSafeInteger(posting.amountPaise)) throw new Error("Transaction posting contains non-integer money");
+    const target = { account: "accounts", creditCard: "creditCards", loan: "loans", investment: "investments", property: "properties", vehicle: "vehicles", otherAsset: "otherAssets" }[posting.entityType];
+    if (target && posting.entityId && !idsByStore.get(target).has(posting.entityId)) throw new Error("Transaction posting has a broken entity reference");
+  }
+  for (const transaction of payload.stores.transactions ?? []) if (transaction.status === "posted" && !(payload.stores.transactionEffects ?? []).some((posting) => posting.transactionId === transaction.id && posting.active)) throw new Error("Posted transaction is missing active effects");
   return {
     schemaVersion: payload.schemaVersion,
     counts: Object.fromEntries(STORE_NAMES.map((name) => [name, payload.stores[name].length])),

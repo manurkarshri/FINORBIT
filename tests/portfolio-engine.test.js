@@ -1,0 +1,6 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { calculatePortfolio } from "../src/engines/portfolio-engine.js";
+
+test("portfolio keeps cost basis independent from current provider price", () => { const result = calculatePortfolio({ investments: [{ id: "fund_123", name: "Index", assetClass: "mutual-fund", quantity: "10.5", openingCostBasisPaise: 100000, status: "active" }], valuations: [{ entityId: "fund_123", unitPricePaise: 12345, source: "provider", priceTimestamp: "2026-09-05T10:00:00Z" }] }); assert.equal(result.costBasisPaise, 100000); assert.equal(result.currentValuePaise, 129623); assert.equal(result.unrealisedGainPaise, 29623); assert.equal(result.holdings[0].priceSource, "provider"); });
+test("fixed deposits and retirement assets work from manual book values", () => { const result = calculatePortfolio({ investments: [{ id: "fd_12345", name: "FD", assetClass: "fixed-deposit", quantity: "1", openingEstimatedValuePaise: 500000, status: "active" }, { id: "ppf_1234", name: "PPF", assetClass: "ppf", quantity: "1", openingEstimatedValuePaise: 200000, status: "active" }] }); assert.equal(result.currentValuePaise, 700000); assert.equal(result.holdings.every(({ priceSource }) => priceSource === "book"), true); });

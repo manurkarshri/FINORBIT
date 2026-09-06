@@ -15,6 +15,7 @@ export async function runTransaction(database, storeNames, mode, operation) {
       delete: (key) => requestToPromise(objectStore.delete(key)),
       clear: () => requestToPromise(objectStore.clear()),
       count: () => requestToPromise(objectStore.count()),
+      indexGetAll: (indexName, query) => requestToPromise(objectStore.index(indexName).getAll(query)),
     };
   };
   try {

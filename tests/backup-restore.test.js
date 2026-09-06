@@ -13,12 +13,13 @@ test("standard backup excludes lock credentials", async () => {
   await runTransaction(database, ["settings"], "readwrite", ({ store }) => store("settings").put({ id: "security.credential", verifier: "private", updatedAt: new Date().toISOString() }));
   const backup = await createBackup(database);
   assert.equal(backup.stores.settings.length, 0);
-  assert.equal(Object.keys(backup.stores).length, 27);
+  assert.equal(Object.keys(backup.stores).length, 29);
   database.close();
 });
 
 test("encrypted backup parses only with correct secret", async () => {
   const database = await db();
+  await assert.rejects(createBackup(database, { encrypted: true }), /passphrase/);
   const backup = await createBackup(database, { encrypted: true, secret: "strong phrase" });
   assert.equal((await parseBackup(JSON.stringify(backup), { secret: "strong phrase" })).preview.counts.accounts, 0);
   await assert.rejects(parseBackup(JSON.stringify(backup), { secret: "wrong" }), /authenticated/);

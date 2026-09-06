@@ -53,3 +53,25 @@ Schema version 1 maps each of the 26 approved logical boundaries to its own obje
 Schema version 2 preserves all 26 stores and adds `openingPositions`, indexed by `entityId` and `effectiveDate`. Profiles, accounts, cards, loans, recurring rules, investments, properties, and vehicles add `status` and normalized `nameKey` indexes for active/status filtering and duplicate-name lookup. Opening records contain stable entity ID/type, integer-paise value, effective date, source (`onboarding` or `manual`), timestamps, and audit linkage. Investment quantities persist as non-negative decimal strings; persisted money never uses binary floating point.
 
 Income sources and commitment templates share `recurringRules` with an explicit `kind`; neither creates `recurringOccurrences`. Archive is reversible and hard deletion is not the normal lifecycle. Closed/sold entities remain readable.
+
+## Milestone 4 physical schema
+
+Schema version 3 adds `transactionEffects` and `transactionVersions`, bringing the physical total to 29 stores. Effects index `transactionId`, `entityId`, and `dimension`; versions index `transactionId` and `createdAt`. Transactions index accounting date, type, status, source/destination account, card, loan, investment, category, and replacement linkage. Receipts and splits index transaction ID.
+
+Transactions contain integer-paise amount, INR, accounting date/time, type/status, stable entity/category/merchant relationships and snapshots, notes/tags, receipt IDs, reconciliation state, recurrence/original/replacement links, and timestamps. Effects carry signed integer paise and an explicit dimension/classification. Split totals must equal the aggregate total. Voided records remain readable; only active effects contribute to projections.
+
+Physical asset transactions populate exactly one of `propertyId`, `vehicleId`, or `otherAssetId`; generic unvalidated `assetId` postings are prohibited. Replacement version snapshots are indexed under both the original transaction chain and the replacement transaction so immutable history is discoverable from either detail view.
+
+## Milestone 5 wealth snapshots
+
+`netWorthSnapshots` records contain an explicit `asOfDate`, period start, calculated positions, asset/liability/net-worth totals, income, expense, savings, savings-rate basis points, valuation adjustment, explanation, integrity result, lifecycle flags, and audit timestamps. Saving another snapshot for the same date requires explicit replacement; the prior record is archived and linked through `supersedesId` rather than overwritten.
+
+Transaction mutations atomically mark every non-stale snapshot whose `asOfDate` is on or after the earliest affected accounting date as stale. Stale records remain readable for diagnostics and audit history but are excluded from normal current-snapshot queries. `marketPrices` supplies only effective-dated valuation facts with stable entity references; price-provider and physical-asset valuation policies remain pending.
+
+Valuation records require a supported asset entity type, stable entity ID, non-negative integer-paise value, INR currency, ISO valuation date, and explicit `manual` or `provider` source. Adding a valuation atomically invalidates snapshots on or after its effective date. Historical recalculation persists month-end snapshots in chronological order, using the requested end date when the final month is partial.
+
+Provider investment records may instead persist integer-paise unit price plus an exact decimal-string quantity; the service derives and stores the resulting total market value deterministically. Snapshot positions retain valuation date, source, freshness status, and age so presentation never disguises stale or book-fallback values as live prices.
+
+Properties and vehicles can persist an optional depreciation policy: `none` or `straight-line`. Straight-line configuration requires an annual rate from 0–10000 basis points, a non-negative residual value no greater than opening estimated value, and an ISO start date. Derived values are used only in the absence of an eligible explicit valuation and retain `depreciation` source metadata.
+
+The `includeInNetWorth` flag is authoritative for every supported asset and liability entity type. Excluded entity keys are removed at the position boundary, covering openings, effects, and valuations without mutating the underlying records. Entity edits and opening-policy changes atomically stale snapshots from their earliest affected date.

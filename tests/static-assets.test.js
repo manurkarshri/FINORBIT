@@ -40,3 +40,27 @@ test("security flow is local-only and backup files are not cached", async () => 
   assert.match(bootstrap, /createUnlockDialog/);
   assert.doesNotMatch(bootstrap, /fetch\(|XMLHttpRequest|WebSocket/);
 });
+
+test("wealth route exposes transparent local valuation and recalculation controls", async () => {
+  const center = await readFile(resolve(root, "src/modules/wealth/wealth-center.js"), "utf8");
+  const bootstrap = await readFile(resolve(root, "src/app/bootstrap.js"), "utf8");
+  for (const label of ["Wealth change explanation", "Record a valuation", "Recalculate history", "Saved snapshots"]) assert.ok(center.includes(label));
+  assert.match(bootstrap, /createWealthCenter/);
+  assert.doesNotMatch(center, /fetch\(|XMLHttpRequest|WebSocket/);
+});
+
+test("wealth controls retain accessible names and non-color stale status", async () => {
+  const center = await readFile(resolve(root, "src/modules/wealth/wealth-center.js"), "utf8");
+  for (const label of ["Asset", "Value in rupees", "Valuation date", "From", "Through"]) assert.ok(center.includes(`field(\"${label}\"`));
+  assert.match(center, /stale; recalculate/);
+  assert.match(center, /setAttribute\(\"role\", \"alert\"\)/);
+});
+
+test("transaction UI retains mobile input and bounded-rendering safeguards", async () => {
+  const center = await readFile(resolve(root, "src/modules/transactions/transaction-center.js"), "utf8");
+  const service = await readFile(resolve(root, "src/services/transaction-service.js"), "utf8");
+  const styles = await readFile(resolve(root, "src/styles/components.css"), "utf8");
+  assert.match(center, /inputMode = "decimal"/); assert.match(center, /aria-busy/);
+  assert.match(service, /filters\.limit/); assert.match(service, /: 200/);
+  assert.match(styles, /min-width: 0/);
+});

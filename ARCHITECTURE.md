@@ -8,6 +8,12 @@ Milestone 3 adds application services for onboarding and entity commands above t
 
 Opening balances and opening asset/liability estimates are dedicated `openingPositions` records linked to stable entity and audit IDs. They are starting facts, never synthetic transactions, income, or expenses.
 
+Milestone 4 introduces a transaction aggregate above IndexedDB. A command validates its type-specific fields and references, derives explicit postings through the pure posting engine, and writes transaction, effects, splits, immutable version snapshot, merchant snapshot, and audit events in one transaction. Projections fold opening positions with active effects; accounts are never mutated as an untraceable balance cache. Replacement editing creates a linked transaction while deactivating original effects atomically. Void/restore toggles one existing effect set and prevents duplicate application.
+
+Milestone 5 introduces a pure Wealth Impact Engine above transaction postings. It joins active effects to transaction accounting dates, applies effective-dated openings and latest eligible valuations, and derives assets, liabilities, net worth, income, expense, savings, savings rate, explanations, and integrity diagnostics without importing the DOM, IndexedDB, or network services. Snapshot persistence and route presentation consume this engine rather than reimplementing calculations.
+
+The wealth application service loads all calculation inputs through one readonly transaction and stores each snapshot with its audit event through one readwrite transaction. Transaction mutations invalidate affected dated snapshots inside their own atomic write boundary, ensuring a posted change cannot commit while leaving a later snapshot marked current.
+
 ## Architectural principles
 
 1. Local-first: all core workflows function without a server or account.

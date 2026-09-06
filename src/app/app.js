@@ -45,7 +45,7 @@ const ROUTE_CONTENT = Object.freeze({
   },
 });
 
-export function createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter, onboardingView, entityService }) {
+export function createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter, onboardingView, entityService, transactionCenter, wealthCenter, portfolioCenter, physicalAssetsCenter, recurringCenter, householdCenter, planningCenter, reportsCenter, reconciliationCenter }) {
   let latestState = getState();
 
   function applyTheme(preference) {
@@ -82,6 +82,11 @@ export function createApp({ root, header, navigation, main, statusRegion, liveRe
   }
 
   function renderRoute({ focus = false } = {}) {
+    if (latestState.activeRoute === "transactions" && transactionCenter) { main.replaceChildren(transactionCenter.element); transactionCenter.start(); if (focus) main.focus({ preventScroll: false }); return; }
+    if (latestState.activeRoute === "accounts" && reconciliationCenter) { main.replaceChildren(reconciliationCenter.element); reconciliationCenter.start(); if (entityService) import("../modules/entities/entity-manager.js").then(({ createEntityManager }) => { if (latestState.activeRoute === "accounts" && reconciliationCenter.element.isConnected) main.append(createEntityManager("accounts", entityService)); }); if (focus) main.focus({ preventScroll: false }); return; }
+    if (latestState.activeRoute === "plan" && recurringCenter) { main.replaceChildren(recurringCenter.element, householdCenter?.element, planningCenter?.element); recurringCenter.start(); householdCenter?.start(); planningCenter?.start(); if (focus) main.focus({ preventScroll: false }); return; }
+    if (latestState.activeRoute === "more" && reportsCenter) { main.replaceChildren(reportsCenter.element); reportsCenter.start(); if (securityCenter) main.append(securityCenter); if (focus) main.focus({ preventScroll: false }); return; }
+    if (latestState.activeRoute === "wealth" && wealthCenter) { main.replaceChildren(wealthCenter.element, portfolioCenter?.element, physicalAssetsCenter?.element); wealthCenter.start(); portfolioCenter?.start(); physicalAssetsCenter?.start(); if (entityService) import("../modules/entities/entity-manager.js").then(({ createEntityManager }) => { if (latestState.activeRoute === "wealth" && wealthCenter.element.isConnected) main.append(createEntityManager("wealth", entityService)); }); if (focus) main.focus({ preventScroll: false }); return; }
     const content = ROUTE_CONTENT[latestState.activeRoute] ?? ROUTE_CONTENT.transactions;
     const heading = document.createElement("header");
     heading.className = "route-heading";
@@ -99,7 +104,7 @@ export function createApp({ root, header, navigation, main, statusRegion, liveRe
       description: content.description,
       note: content.note,
     }));
-    if (["accounts", "plan", "wealth"].includes(latestState.activeRoute) && entityService) import("../modules/entities/entity-manager.js").then(({ createEntityManager }) => main.append(createEntityManager(latestState.activeRoute, entityService)));
+    if (["accounts", "plan"].includes(latestState.activeRoute) && entityService) { const requestedRoute = latestState.activeRoute; import("../modules/entities/entity-manager.js").then(({ createEntityManager }) => { if (latestState.activeRoute === requestedRoute && heading.isConnected) main.append(createEntityManager(requestedRoute, entityService)); }); }
     if (latestState.activeRoute === "more" && securityCenter) main.append(securityCenter);
     if (focus) title.focus({ preventScroll: false });
   }

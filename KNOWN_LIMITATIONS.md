@@ -1,5 +1,15 @@
 # Known Limitations
 
+## Current development status
+
+- Milestone 4 is implemented and validated but remains on draft PR #5; `main` still contains Milestone 3.
+- The Milestone 5 Wealth Impact Engine is implemented and locally verified, but remains stacked on the unmerged Milestone 4 branch and is not yet available from `main`.
+- Valuations are validated, effective-dated manual/provider facts with freshness and fallback status. Explicit straight-line property/vehicle depreciation is supported, but there is no live market-price provider, automatic appraisal, or tax-lot calculation.
+- Wealth integrity diagnostics identify structural inconsistencies but do not yet offer automated repair.
+- GitHub Pages deployment remains unavailable until repository Pages is enabled with GitHub Actions as its source.
+- Local financial records and receipt files are not field-encrypted at rest. Persistent-storage permission reduces browser eviction risk but cannot replace an independently stored encrypted backup.
+- Forgotten app-lock and encrypted-backup secrets cannot be recovered. The recovery procedure is documented in `docs/RECOVERY_GUIDE.md`.
+
 ## Milestone 1
 
 - The application is a navigable PWA shell only; its empty states are intentionally non-financial.
@@ -25,6 +35,16 @@ These limitations change only through an approved specification/roadmap update.
 - Duplicate names produce guidance but remain allowed. Warning-only conditions such as over-limit cards and loan principal above original principal remain intentional user choices.
 - Day-of-month values permit 1–31; later recurrence logic must define behavior in shorter months.
 - Opening estimates are user-entered and may be stale. No automatic price, depreciation, amortization, or rental-income behavior exists.
+
+## Milestone 4
+
+- Transactions and receipt content are not field-encrypted at rest. App lock is not device or database encryption.
+- Projections cover opening positions plus active transaction postings; there is no net-worth trend, wealth-change explanation, market appreciation, asset allocation, or investment performance engine.
+- Investment sales preserve proceeds/cost-position inputs but do not calculate tax lots, gains, or taxes.
+- Reconciliation state is stored but no reconciliation workflow exists. Recurring templates still generate no occurrences or reminders.
+- Standard backups omit receipt content unless complete receipt inclusion is explicitly requested. Receipt storage is limited to 10 MB per file and 50 MB total.
+- Categories are a minimal default logging set; full category management and budgets remain Milestone 7.
+- Closed cards can receive a normal payment only while a positive outstanding projection remains; closed loans require the explicit balance-correction workflow. Archived/sold assets must be restored or reactivated before new postings.
 
 ## Milestone 2
 

@@ -5,9 +5,11 @@ import { encryptPayload } from "../security/crypto.js";
 export const BACKUP_FORMAT = "finorbit-backup";
 const SECURITY_SETTING_IDS = new Set(["security.credential", "security.lock"]);
 
-export async function createBackup(database, { encrypted = false, secret, cryptoObject = globalThis.crypto, now = () => new Date().toISOString() } = {}) {
+export async function createBackup(database, { encrypted = false, secret, includeReceipts = false, cryptoObject = globalThis.crypto, now = () => new Date().toISOString() } = {}) {
+  if (encrypted && !secret) throw new TypeError("A backup passphrase is required.");
   const stores = await runTransaction(database, STORE_NAMES, "readonly", async ({ store }) => Object.fromEntries(await Promise.all(STORE_NAMES.map(async (name) => [name, await store(name).getAll()]))));
   if (!encrypted) stores.settings = stores.settings.filter((item) => !SECURITY_SETTING_IDS.has(item.id));
+  if (!includeReceipts) stores.receipts = stores.receipts.map(({ contentBase64, ...metadata }) => ({ ...metadata, contentExcluded: true }));
   const payload = { format: BACKUP_FORMAT, version: 1, app: "FinOrbit", schemaVersion: SCHEMA_VERSION, exportedAt: now(), encrypted, counts: Object.fromEntries(STORE_NAMES.map((name) => [name, stores[name].length])), stores };
   return encrypted ? encryptPayload(payload, secret, cryptoObject) : payload;
 }

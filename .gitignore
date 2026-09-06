@@ -11,6 +11,8 @@ dist/
 build/
 coverage/
 .cache/
+output/
+tmp/
 __pycache__/
 *.py[cod]
 

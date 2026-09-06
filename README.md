@@ -8,7 +8,7 @@ FinOrbit is a new, independent, local-first personal finance and wealth-manageme
 
 ## Project status
 
-Milestone 3 is implemented on `codex/onboarding`: FinOrbit now provides resumable guided setup, profile preferences, entity configuration and lifecycle management, explicit opening positions, and schema-v2 backup/restore. It intentionally contains no transaction logging, recurrence generation, wealth calculations, reports, or market syncing.
+The complete Version 1.0 local release candidate is implemented on `codex/v1-production-release`. Milestones 0–14 are complete; the Milestone 15 local acceptance gate passes. Publication remains pending reviewed integration to `main`, GitHub Pages enablement, the `v1.0.0` tag, and the GitHub Release.
 
 The governing specification is [docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md](docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md).
 
@@ -32,8 +32,18 @@ Version 1 explicitly excludes bank/broker synchronization, cloud sync, multi-use
 - [PWA foundation operations](docs/PWA_FOUNDATION.md)
 - [Database and security foundation](docs/DATABASE_AND_SECURITY_FOUNDATION.md)
 - [Onboarding and entity management](docs/ONBOARDING_AND_ENTITY_MANAGEMENT.md)
-
-## Development status
+- [Transaction engine and daily use](docs/TRANSACTION_ENGINE_AND_DAILY_USE.md)
+- [Wealth Impact Engine](docs/WEALTH_IMPACT_ENGINE.md)
+- [Categories, family and budgets](docs/CATEGORIES_FAMILY_BUDGETS.md)
+- [Investments and pricing](docs/INVESTMENTS_AND_PRICING.md)
+- [Physical assets](docs/PHYSICAL_ASSETS.md)
+- [Forecasting and goals](docs/FORECASTING_AND_GOALS.md)
+- [Reports and exports](docs/REPORTS_AND_EXPORTS.md)
+- [Reconciliation and integrity](docs/RECONCILIATION_AND_INTEGRITY.md)
+- [User guide](docs/USER_GUIDE.md)
+- [Privacy notice](docs/PRIVACY_NOTICE.md)
+- [Recovery guide](docs/RECOVERY_GUIDE.md)
+- [Version 1 release notes](docs/RELEASE_NOTES_V1.0.0.md)
 
 ## Local development
 

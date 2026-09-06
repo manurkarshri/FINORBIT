@@ -1,11 +1,11 @@
 import { runTransaction } from "./transaction.js";
 import { createOpaqueId } from "./validation.js";
 
-export const AUDIT_TYPES = Object.freeze(["database.created", "migration.started", "migration.completed", "migration.failed", "security.setup", "security.unlocked", "security.locked", "security.unlock_failed", "backup.created", "restore.attempted", "restore.completed", "restore.failed", "data.reset", "entity.created", "entity.edited", "entity.archived", "entity.restored", "entity.closed", "opening-value.changed", "onboarding.completed"]);
+export const AUDIT_TYPES = Object.freeze(["database.created", "migration.started", "migration.completed", "migration.failed", "security.setup", "security.unlocked", "security.locked", "security.unlock_failed", "backup.created", "restore.attempted", "restore.completed", "restore.failed", "data.reset", "entity.created", "entity.edited", "entity.archived", "entity.restored", "entity.closed", "opening-value.changed", "onboarding.completed", "transaction.created", "transaction.replaced", "transaction.voided", "transaction.restored", "transaction.duplicated", "balance-correction.created", "split.changed", "receipt.added", "receipt.replaced", "receipt.deleted", "wealth.snapshot-created", "wealth.snapshot-recalculated", "wealth.valuation-recorded", "recurring.generated", "recurring.skipped", "recurring.postponed", "recurring.confirmed", "category.hidden", "budget.saved", "goal.saved", "reconciliation.created", "reconciliation.completed", "transaction.cleared", "integrity.repair"]);
 
 export function createAuditEvent(type, detail = {}, { now = () => new Date().toISOString(), cryptoObject = globalThis.crypto } = {}) {
   if (!AUDIT_TYPES.includes(type)) throw new TypeError("Unsupported audit event type");
-  return { id: createOpaqueId(cryptoObject), type, detail: sanitizeAuditDetail(detail), createdAt: now(), updatedAt: now(), schemaVersion: 2 };
+  return { id: createOpaqueId(cryptoObject), type, detail: sanitizeAuditDetail(detail), createdAt: now(), updatedAt: now(), schemaVersion: 3 };
 }
 
 export function sanitizeAuditDetail(detail) {

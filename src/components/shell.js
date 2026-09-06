@@ -21,9 +21,7 @@ function element(tag, attributes = {}, children = []) {
 }
 
 export function createHeader({ themePreference, onThemeChange }) {
-  const brandMark = element("span", { className: "brand__mark", "aria-hidden": "true" }, [
-    element("span", { className: "brand__core" }),
-  ]);
+  const brandMark = element("img", { className: "brand__mark", src: "./assets/icons/icon-192.png", alt: "" });
   const brand = element("a", { className: "brand", href: "#/transactions", "aria-label": "FinOrbit home" }, [
     brandMark,
     element("span", { className: "brand__copy" }, [

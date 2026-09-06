@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.0.0-m1";
+export const APP_VERSION = "1.0.0";
 export const THEME_STORAGE_KEY = "finorbit.theme";
 export const THEMES = Object.freeze(["system", "light", "dark"]);
 
