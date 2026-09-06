@@ -19,6 +19,7 @@ test("standard backup excludes lock credentials", async () => {
 
 test("encrypted backup parses only with correct secret", async () => {
   const database = await db();
+  await assert.rejects(createBackup(database, { encrypted: true }), /passphrase/);
   const backup = await createBackup(database, { encrypted: true, secret: "strong phrase" });
   assert.equal((await parseBackup(JSON.stringify(backup), { secret: "strong phrase" })).preview.counts.accounts, 0);
   await assert.rejects(parseBackup(JSON.stringify(backup), { secret: "wrong" }), /authenticated/);

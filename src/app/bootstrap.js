@@ -19,6 +19,24 @@ import { createOnboarding } from "../modules/onboarding/onboarding.js";
 import { createTransactionService, ensureDefaultCategories } from "../services/transaction-service.js";
 import { createReceiptService } from "../services/receipt-service.js";
 import { createTransactionCenter } from "../modules/transactions/transaction-center.js";
+import { createWealthService } from "../services/wealth-service.js";
+import { createWealthCenter } from "../modules/wealth/wealth-center.js";
+import { createRecurringService } from "../services/recurring-service.js";
+import { createRecurringCenter } from "../modules/recurring/recurring-center.js";
+import { createHouseholdService } from "../services/household-service.js";
+import { createHouseholdCenter } from "../modules/budgets/household-center.js";
+import { createPortfolioService } from "../services/portfolio-service.js";
+import { createMarketDataService } from "../services/market-data-service.js";
+import { createPortfolioCenter } from "../modules/investments/portfolio-center.js";
+import { createPhysicalAssetService } from "../services/physical-asset-service.js";
+import { createPhysicalAssetsCenter } from "../modules/assets/physical-assets-center.js";
+import { createPlanningService } from "../services/planning-service.js";
+import { createPlanningCenter } from "../modules/planning/planning-center.js";
+import { createReportService } from "../services/report-service.js";
+import { createReportsCenter } from "../modules/reports/reports-center.js";
+import { createReconciliationService } from "../services/reconciliation-service.js";
+import { createReconciliationCenter } from "../modules/reconciliation/reconciliation-center.js";
+import { createStorageHealthService } from "../services/storage-health-service.js";
 
 const safeMessage = "Reload the page. If the problem continues, clear only FinOrbit’s cached site files and try again.";
 
@@ -128,6 +146,7 @@ async function bootstrap() {
     document.addEventListener("visibilitychange", () => lockManager.visibilityChanged(document.hidden));
     for (const eventName of ["pointerdown", "keydown"]) document.addEventListener(eventName, () => lockManager.activity(), { passive: true });
   }
+  const storageHealth = createStorageHealthService(database);
   const securityCenter = createSecurityCenter({
     onSetup: async (secret, mode) => {
       const next = await createCredential(secret, mode);
@@ -150,15 +169,28 @@ async function bootstrap() {
       return `Backup validated: ${Object.values(preview.counts).reduce((sum, count) => sum + count, 0)} records.${lockNotice}`;
     },
     onReset: async () => { await resetApplicationData({ manager: databaseManager, coordination }); window.location.reload(); },
+    onStorageStatus: () => storageHealth.status(),
+    onPersistStorage: () => storageHealth.requestPersistence(),
+    onDatabaseHealth: () => storageHealth.databaseHealth(),
   });
   const entityService = createEntityService(database);
   const onboardingService = createOnboardingService(database);
   let app;
-  const onboardingView = createOnboarding({ onboarding: onboardingService, entities: entityService, onExit: () => app.showRoute("accounts"), onComplete: () => app.showRoute("accounts") });
+  const leaveOnboarding = () => { if (window.location.hash === "#/accounts") app.showRoute("accounts"); else window.location.hash = "#/accounts"; };
+  const onboardingView = createOnboarding({ onboarding: onboardingService, entities: entityService, onExit: leaveOnboarding, onComplete: leaveOnboarding });
   const transactionService = createTransactionService(database);
   const receiptService = createReceiptService(database);
   const transactionCenter = createTransactionCenter({ database, transactions: transactionService, receipts: receiptService, liveRegion });
-  app = createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter, onboardingView, entityService, transactionCenter });
+  const wealthService = createWealthService(database);
+  const wealthCenter = createWealthCenter({ wealth: wealthService, entities: entityService, liveRegion });
+  const portfolioCenter = createPortfolioCenter({ portfolio: createPortfolioService(database), marketData: createMarketDataService(database, { wealth: wealthService, adapters: {} }), liveRegion });
+  const physicalAssetsCenter = createPhysicalAssetsCenter({ assets: createPhysicalAssetService(database), entities: entityService, liveRegion });
+  const recurringCenter = createRecurringCenter({ recurring: createRecurringService(database, { transactions: transactionService }), entities: entityService, transactions: transactionService, liveRegion });
+  const householdCenter = createHouseholdCenter({ household: createHouseholdService(database), liveRegion });
+  const planningCenter = createPlanningCenter({ planning: createPlanningService(database, { transactions: transactionService, recurring: createRecurringService(database, { transactions: transactionService }) }), liveRegion });
+  const reportsCenter = createReportsCenter({ reports: createReportService(database), liveRegion });
+  const reconciliationCenter = createReconciliationCenter({ reconciliation: createReconciliationService(database, { transactions: transactionService }), liveRegion });
+  app = createApp({ root, header, navigation, main, statusRegion, liveRegion, securityCenter, onboardingView, entityService, transactionCenter, wealthCenter, portfolioCenter, physicalAssetsCenter, recurringCenter, householdCenter, planningCenter, reportsCenter, reconciliationCenter });
   const router = createRouter({ onRouteChange: (route, options) => app.showRoute(route, options) });
   app.start();
   router.start();

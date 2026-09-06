@@ -33,7 +33,7 @@ test("storage failures safely fall back to system", () => {
   assert.equal(writeThemePreference("dark", failing), false);
 });
 
-test("application version has a valid milestone prerelease", () => {
-  assert.deepEqual(parseVersion(APP_VERSION), { major: 1, minor: 0, patch: 0, prerelease: "m1" });
+test("application version is the production release", () => {
+  assert.deepEqual(parseVersion(APP_VERSION), { major: 1, minor: 0, patch: 0, prerelease: null });
   assert.equal(parseVersion("not-a-version"), null);
 });

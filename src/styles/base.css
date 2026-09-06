@@ -8,4 +8,6 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 h1, h2, p { margin-top: 0; }
 h1, h2 { line-height: 1.08; text-wrap: balance; }
 button { color: inherit; }
+[aria-busy="true"] { cursor: progress; }
+[aria-busy="true"] > * { opacity: .72; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }

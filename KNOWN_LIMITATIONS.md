@@ -1,5 +1,15 @@
 # Known Limitations
 
+## Current development status
+
+- Milestone 4 is implemented and validated but remains on draft PR #5; `main` still contains Milestone 3.
+- The Milestone 5 Wealth Impact Engine is implemented and locally verified, but remains stacked on the unmerged Milestone 4 branch and is not yet available from `main`.
+- Valuations are validated, effective-dated manual/provider facts with freshness and fallback status. Explicit straight-line property/vehicle depreciation is supported, but there is no live market-price provider, automatic appraisal, or tax-lot calculation.
+- Wealth integrity diagnostics identify structural inconsistencies but do not yet offer automated repair.
+- GitHub Pages deployment remains unavailable until repository Pages is enabled with GitHub Actions as its source.
+- Local financial records and receipt files are not field-encrypted at rest. Persistent-storage permission reduces browser eviction risk but cannot replace an independently stored encrypted backup.
+- Forgotten app-lock and encrypted-backup secrets cannot be recovered. The recovery procedure is documented in `docs/RECOVERY_GUIDE.md`.
+
 ## Milestone 1
 
 - The application is a navigable PWA shell only; its empty states are intentionally non-financial.

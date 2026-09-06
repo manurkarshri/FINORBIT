@@ -10,6 +10,8 @@ export function createReceiptService(database, { now = () => new Date().toISOStr
   async function save(transactionId, file, { replaceId } = {}) {
     if (!RECEIPT_TYPES.has(file.type)) throw new Error("Receipt must be a JPEG, PNG, WebP, or PDF.");
     if (!Number.isSafeInteger(file.size) || file.size <= 0 || file.size > RECEIPT_FILE_LIMIT) throw new Error("Receipt must be larger than zero and no more than 10 MB.");
+    let decodedSize; try { decodedSize = atob(String(file.contentBase64 ?? "")).length; } catch { throw new Error("Receipt content is not valid base64."); }
+    if (decodedSize !== file.size) throw new Error("Receipt content size does not match the selected file.");
     const existing = await runTransaction(database, ["receipts"], "readonly", ({ store }) => store("receipts").getAll()); const replaced = replaceId ? existing.find((item) => item.id === replaceId) : null;
     const total = existing.reduce((sum, item) => sum + (item.size ?? 0), 0) - (replaced?.size ?? 0) + file.size; if (total > RECEIPT_TOTAL_LIMIT) throw new Error("Receipt storage limit of 50 MB would be exceeded.");
     const instant = now(); const receipt = { id: replaceId ?? id(), transactionId, displayName: String(file.name ?? "receipt").slice(0, 120), mimeType: file.type, size: file.size, contentBase64: file.contentBase64, createdAt: replaced?.createdAt ?? instant, updatedAt: instant, schemaVersion: 3 };

@@ -4,12 +4,21 @@ import { createAuditEvent } from "../database/audit.js";
 import { buildPostings, reversePostings, validateTransaction } from "../engines/posting-engine.js";
 
 const REFS = { sourceAccountId: "accounts", destinationAccountId: "accounts", creditCardId: "creditCards", loanId: "loans", investmentId: "investments", propertyId: "properties", vehicleId: "vehicles", otherAssetId: "otherAssets", categoryId: "categories", subcategoryId: "subcategories", familyMemberId: "familyMembers", recurringRuleId: "recurringRules", originalTransactionId: "transactions" };
-const QUERY_INDEX = { type: "byType", status: "byStatus", sourceAccountId: "bySourceAccountId", destinationAccountId: "byDestinationAccountId", creditCardId: "byCreditCardId", loanId: "byLoanId", investmentId: "byInvestmentId", categoryId: "byCategoryId", merchantId: "byMerchantId", familyMemberId: "byFamilyMemberId", accountingDate: "byAccountingDate" };
-export const DEFAULT_CATEGORIES = Object.freeze(["Income", "Housing", "Groceries", "Food", "Utilities", "Transport", "Education", "Family", "Healthcare", "Insurance", "Personal", "Entertainment", "Travel", "Taxes", "Financial charges", "Business", "Agriculture", "Donations", "Miscellaneous"]);
+const QUERY_INDEX = { type: "byType", status: "byStatus", sourceAccountId: "bySourceAccountId", destinationAccountId: "byDestinationAccountId", creditCardId: "byCreditCardId", loanId: "byLoanId", investmentId: "byInvestmentId", categoryId: "byCategoryId", merchantId: "byMerchantId", familyMemberId: "byFamilyMemberId", accountingDate: "byAccountingDate", recurringOccurrenceId: "byRecurringOccurrenceId" };
+export const DEFAULT_CATEGORIES = Object.freeze(["Income", "Housing", "Rent", "Home loan", "Groceries", "Food and dining", "Utilities", "Household supplies", "Domestic help", "Transport", "Fuel", "Public transport", "Vehicle maintenance", "Children", "School fees", "Books and stationery", "Tuition", "School transport", "Family support", "Parents and elder care", "Healthcare", "Medicines", "Insurance", "Clothing", "Personal care", "Communication", "Technology", "Entertainment", "Travel", "Religious events", "Social events", "Donations", "Bank charges", "Loan interest", "Taxes", "Business", "Agriculture", "Emergency expenses", "Miscellaneous"]);
+const categoryClassification = (name) => ["Entertainment", "Travel", "Food and dining", "Social events", "Clothing"].includes(name) ? "discretionary" : ["Bank charges", "Loan interest", "Taxes", "Insurance", "Rent", "Home loan"].includes(name) ? "financial-commitment" : name === "Income" ? "income" : "essential";
+
+async function markWealthSnapshotsStale(store, fromDate, instant) {
+  const snapshots = await store("netWorthSnapshots").getAll();
+  for (const snapshot of snapshots) if (!snapshot.stale && snapshot.asOfDate >= fromDate) {
+    snapshot.stale = true;
+    snapshot.updatedAt = instant;
+    await store("netWorthSnapshots").put(snapshot);
+  }
+}
 
 export async function ensureDefaultCategories(database, { now = () => new Date().toISOString() } = {}) {
-  const existing = await runTransaction(database, ["categories"], "readonly", ({ store }) => store("categories").count()); if (existing) return;
-  const instant = now(); await runTransaction(database, ["categories"], "readwrite", async ({ store }) => { for (const name of DEFAULT_CATEGORIES) await store("categories").add({ id: `category_${name.toLocaleLowerCase("en-IN").replaceAll(" ", "_")}`, name, nameKey: name.toLocaleLowerCase("en-IN"), status: "active", archived: false, createdAt: instant, updatedAt: instant, schemaVersion: 3 }); });
+  const instant = now(); await runTransaction(database, ["categories"], "readwrite", async ({ store }) => { for (const name of DEFAULT_CATEGORIES) { const id = `category_${name.toLocaleLowerCase("en-IN").replaceAll(" ", "_")}`; if (!(await store("categories").get(id))) await store("categories").add({ id, name, nameKey: name.toLocaleLowerCase("en-IN"), classification: categoryClassification(name), icon: "tag", status: "active", hidden: false, archived: false, createdAt: instant, updatedAt: instant, schemaVersion: 5 }); } });
 }
 
 export async function validateLinkedEntityEligibility(database, input) {
@@ -32,12 +41,17 @@ export function createTransactionService(database, { now = () => new Date().toIS
     return errors;
   }
   async function create(input, { splits = [], auditType = "transaction.created" } = {}) {
+    if (input.recurringOccurrenceId) {
+      const existing = (await runTransaction(database, ["transactions"], "readonly", ({ store }) => store("transactions").indexGetAll("byRecurringOccurrenceId", input.recurringOccurrenceId)))[0];
+      if (existing) return { ok: true, transaction: existing, postings: [], warnings: [], duplicatePrevented: true };
+    }
     const errors = await validate(input, splits); if (Object.keys(errors).length) return { ok: false, errors };
     const instant = now(); let merchant; let similarMerchant = false;
     if (input.merchantText?.trim()) { const nameKey = input.merchantText.trim().toLocaleLowerCase("en-IN"); const merchants = await runTransaction(database, ["merchants"], "readonly", ({ store }) => store("merchants").getAll()); merchant = merchants.find((item) => item.nameKey === nameKey); similarMerchant = !merchant && merchants.some((item) => item.nameKey.includes(nameKey) || nameKey.includes(item.nameKey)); merchant ??= { id: id(), name: input.merchantText.trim(), nameKey, status: "active", archived: false, createdAt: instant, updatedAt: instant, schemaVersion: 3 }; }
     const transaction = { ...input, id: input.id ?? id(), merchantId: merchant?.id, currency: "INR", status: input.status ?? "posted", tags: [...new Set(input.tags ?? [])], receiptIds: input.receiptIds ?? [], reconciliationState: input.reconciliationState ?? "unreconciled", createdAt: input.createdAt ?? instant, updatedAt: instant, schemaVersion: 3 };
     const postings = buildPostings(transaction).map((posting) => ({ ...posting, id: id(), transactionId: transaction.id, active: true, createdAt: instant, updatedAt: instant, schemaVersion: 3 }));
-    await runTransaction(database, ["transactions", "transactionEffects", "transactionSplits", "transactionVersions", "merchants", "auditLogs"], "readwrite", async ({ store }) => {
+    const soldAsset = input.type === "asset-sale" ? physicalStoreFor(input) : null;
+    await runTransaction(database, ["transactions", "transactionEffects", "transactionSplits", "transactionVersions", "merchants", "netWorthSnapshots", "auditLogs", ...(soldAsset ? [soldAsset] : [])], "readwrite", async ({ store }) => {
       if (merchant && !(await store("merchants").get(merchant.id))) await store("merchants").add(merchant);
       await store("transactions").add(transaction);
       for (const posting of postings) await store("transactionEffects").add(posting);
@@ -46,6 +60,8 @@ export function createTransactionService(database, { now = () => new Date().toIS
       await store("auditLogs").add(createAuditEvent(auditType, { transactionId: transaction.id, type: transaction.type }));
       if (transaction.type === "balance-correction") await store("auditLogs").add(createAuditEvent("balance-correction.created", { transactionId: transaction.id }));
       if (splits.length) await store("auditLogs").add(createAuditEvent("split.changed", { transactionId: transaction.id, count: splits.length }));
+      if (soldAsset) { const assetId = input.propertyId ?? input.vehicleId ?? input.otherAssetId; const asset = await store(soldAsset).get(assetId); asset.status = "sold"; asset.archived = true; asset.soldTransactionId = transaction.id; asset.saleDate = transaction.accountingDate; asset.updatedAt = instant; await store(soldAsset).put(asset); }
+      await markWealthSnapshotsStale(store, transaction.accountingDate, instant);
     });
     return { ok: true, transaction, postings, warnings: [...await warnings(transaction), ...(similarMerchant ? ["A similar merchant name already exists."] : [])] };
   }
@@ -54,27 +70,28 @@ export function createTransactionService(database, { now = () => new Date().toIS
     const input = { ...original, ...changes, id: undefined, createdAt: undefined, replacementOfId: original.id, originalTransactionId: original.originalTransactionId ?? original.id, status: "posted" };
     const errors = await validate(input, splits); if (Object.keys(errors).length) return { ok: false, errors };
     const instant = now(); const replacement = { ...input, id: id(), createdAt: instant, updatedAt: instant, schemaVersion: 3 }; const postings = buildPostings(replacement).map((posting) => ({ ...posting, id: id(), transactionId: replacement.id, active: true, createdAt: instant, updatedAt: instant, schemaVersion: 3 }));
-    await runTransaction(database, ["transactions", "transactionEffects", "transactionSplits", "transactionVersions", "auditLogs"], "readwrite", async ({ store }) => {
+    await runTransaction(database, ["transactions", "transactionEffects", "transactionSplits", "transactionVersions", "netWorthSnapshots", "auditLogs"], "readwrite", async ({ store }) => {
       const active = await store("transactionEffects").indexGetAll("byTransactionId", original.id); for (const posting of active) { posting.active = false; posting.updatedAt = instant; await store("transactionEffects").put(posting); }
       original.status = "voided"; original.voidReason = "Replaced by an edited transaction"; original.replacedById = replacement.id; original.updatedAt = instant; await store("transactions").put(original); await store("transactions").add(replacement);
       for (const posting of postings) await store("transactionEffects").add(posting); for (let index = 0; index < splits.length; index++) await store("transactionSplits").add({ ...splits[index], id: id(), transactionId: replacement.id, order: index, createdAt: instant, updatedAt: instant, schemaVersion: 3 });
       await store("transactionVersions").add({ id: id(), transactionId: original.id, version: 2, snapshot: replacement, replacementId: replacement.id, createdAt: instant, updatedAt: instant, schemaVersion: 3 });
       await store("transactionVersions").add({ id: id(), transactionId: replacement.id, version: 1, snapshot: replacement, originalTransactionId: original.id, createdAt: instant, updatedAt: instant, schemaVersion: 3 }); await store("auditLogs").add(createAuditEvent("transaction.replaced", { transactionId: original.id, replacementId: replacement.id })); if (splits.length) await store("auditLogs").add(createAuditEvent("split.changed", { transactionId: replacement.id, count: splits.length }));
+      await markWealthSnapshotsStale(store, original.accountingDate < replacement.accountingDate ? original.accountingDate : replacement.accountingDate, instant);
     }); return { ok: true, transaction: replacement, postings, warnings: await warnings(replacement) };
   }
   async function voidTransaction(transactionId, reason, { replacementId, auditType = "transaction.voided" } = {}) {
     if (!reason?.trim()) throw new Error("A reason is required.");
-    return runTransaction(database, ["transactions", "transactionEffects", "auditLogs"], "readwrite", async ({ store }) => {
+    return runTransaction(database, ["transactions", "transactionEffects", "netWorthSnapshots", "auditLogs"], "readwrite", async ({ store }) => {
       const transaction = await store("transactions").get(transactionId); if (!transaction || transaction.status !== "posted") throw new Error("Transaction is not currently posted.");
       const active = await store("transactionEffects").indexGetAll("byTransactionId", transactionId); for (const posting of active) { posting.active = false; posting.updatedAt = now(); await store("transactionEffects").put(posting); }
-      transaction.status = "voided"; transaction.voidReason = reason; transaction.replacedById = replacementId; transaction.updatedAt = now(); await store("transactions").put(transaction); await store("auditLogs").add(createAuditEvent(auditType, { transactionId, replacementId })); return transaction;
+      transaction.status = "voided"; transaction.voidReason = reason; transaction.replacedById = replacementId; transaction.updatedAt = now(); await store("transactions").put(transaction); await store("auditLogs").add(createAuditEvent(auditType, { transactionId, replacementId })); await markWealthSnapshotsStale(store, transaction.accountingDate, transaction.updatedAt); return transaction;
     });
   }
   async function restore(transactionId, reason = "Restored by user") {
-    return runTransaction(database, ["transactions", "transactionEffects", "auditLogs"], "readwrite", async ({ store }) => {
+    return runTransaction(database, ["transactions", "transactionEffects", "netWorthSnapshots", "auditLogs"], "readwrite", async ({ store }) => {
       const transaction = await store("transactions").get(transactionId); if (!transaction || transaction.status !== "voided" || transaction.replacedById) throw new Error("This transaction cannot be safely restored.");
       const postings = await store("transactionEffects").indexGetAll("byTransactionId", transactionId); if (postings.some((p) => p.active)) throw new Error("Transaction effects are already active.");
-      for (const posting of postings) { posting.active = true; posting.updatedAt = now(); await store("transactionEffects").put(posting); } transaction.status = "posted"; transaction.restoreReason = reason; transaction.updatedAt = now(); await store("transactions").put(transaction); await store("auditLogs").add(createAuditEvent("transaction.restored", { transactionId })); return transaction;
+      for (const posting of postings) { posting.active = true; posting.updatedAt = now(); await store("transactionEffects").put(posting); } transaction.status = "posted"; transaction.restoreReason = reason; transaction.updatedAt = now(); await store("transactions").put(transaction); await store("auditLogs").add(createAuditEvent("transaction.restored", { transactionId })); await markWealthSnapshotsStale(store, transaction.accountingDate, transaction.updatedAt); return transaction;
     });
   }
   async function duplicate(transactionId, accountingDate, { includeReceipts = false } = {}) { const original = await get(transactionId); if (!original) throw new Error("Transaction not found."); const { id: _, createdAt: __, updatedAt: ___, receiptIds, replacementOfId, replacedById, voidReason, ...copy } = original; return create({ ...copy, accountingDate, status: "posted", receiptIds: includeReceipts ? receiptIds : [] }, { auditType: "transaction.duplicated" }); }
@@ -86,7 +103,9 @@ export function createTransactionService(database, { now = () => new Date().toIS
     records = records.filter((tx) => (!filters.dateFrom || tx.accountingDate >= filters.dateFrom) && (!filters.dateTo || tx.accountingDate <= filters.dateTo) && (!filters.merchant || String(tx.merchantText ?? "").toLocaleLowerCase("en-IN").includes(filters.merchant.toLocaleLowerCase("en-IN"))) && (!filters.tag || tx.tags?.includes(filters.tag)) && (filters.minAmountPaise == null || tx.amountPaise >= filters.minAmountPaise) && (filters.maxAmountPaise == null || tx.amountPaise <= filters.maxAmountPaise) && (filters.hasReceipt == null || Boolean(tx.receiptIds?.length) === filters.hasReceipt));
     for (const [field] of Object.entries(QUERY_INDEX)) if (filters[field] != null && filters[field] !== "" && (!indexed || field !== indexed[0])) records = records.filter((tx) => tx[field] === filters[field]);
     if (filters.search) { const needle = filters.search.toLocaleLowerCase("en-IN"); records = records.filter((tx) => [tx.merchantText, tx.notes, ...(tx.tags ?? [])].some((value) => String(value ?? "").toLocaleLowerCase("en-IN").includes(needle))); }
-    return records.sort((a, b) => b.accountingDate.localeCompare(a.accountingDate) || b.createdAt.localeCompare(a.createdAt));
+    records.sort((a, b) => b.accountingDate.localeCompare(a.accountingDate) || b.createdAt.localeCompare(a.createdAt));
+    const offset = Number.isSafeInteger(filters.offset) && filters.offset > 0 ? filters.offset : 0; const limit = Number.isSafeInteger(filters.limit) && filters.limit > 0 ? filters.limit : 200;
+    return records.slice(offset, offset + limit);
   }
   async function warnings(tx) { if (tx.type !== "credit-card-payment") return []; const projection = await project("creditCard", tx.creditCardId); return projection < 0 ? ["This payment creates a credit balance on the card."] : []; }
   async function project(entityType, entityId) {
@@ -96,3 +115,4 @@ export function createTransactionService(database, { now = () => new Date().toIS
   }
   return { create, replace, void: voidTransaction, restore, duplicate, get, details, list, project };
 }
+function physicalStoreFor(input) { return input.propertyId ? "properties" : input.vehicleId ? "vehicles" : input.otherAssetId ? "otherAssets" : null; }

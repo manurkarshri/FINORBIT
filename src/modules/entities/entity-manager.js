@@ -1,11 +1,11 @@
-const ROUTE_TYPES = { accounts: ["account", "creditCard", "loan"], plan: ["incomeSource", "commitment"], wealth: ["investment", "property", "vehicle"] };
-const LABELS = { account: "Bank and cash accounts", creditCard: "Credit cards", loan: "Loans", incomeSource: "Income sources", commitment: "Recurring commitments", investment: "Investments", property: "Properties", vehicle: "Vehicles" };
+const ROUTE_TYPES = { accounts: ["account", "creditCard", "loan"], plan: ["incomeSource", "commitment"], wealth: ["investment", "property", "vehicle", "otherAsset"] };
+const LABELS = { account: "Bank and cash accounts", creditCard: "Credit cards", loan: "Loans", incomeSource: "Income sources", commitment: "Recurring commitments", investment: "Investments", property: "Properties", vehicle: "Vehicles", otherAsset: "Other assets" };
 
 export function createEntityManager(route, service) {
   const root = document.createElement("section"); root.className = "entity-manager";
   for (const type of ROUTE_TYPES[route] ?? []) {
     const section = document.createElement("section"); const title = document.createElement("h2"); title.textContent = LABELS[type];
-    const note = document.createElement("p"); note.textContent = route === "plan" ? "Configuration only—no transactions or recurring occurrences are generated." : route === "wealth" ? "Opening estimates only—no prices, gains, or wealth totals are calculated." : "Opening positions only—transaction history arrives in a later milestone.";
+    const note = document.createElement("p"); note.textContent = route === "plan" ? "Configuration only—no transactions or recurring occurrences are generated." : route === "wealth" ? "Opening estimates and active transaction effects feed the dated wealth calculation above; automated market pricing remains pending." : "Opening positions only—transaction history arrives in a later milestone.";
     const controls = document.createElement("div"); controls.className = "entity-manager__controls";
     const search = document.createElement("input"); search.type = "search"; search.placeholder = `Search ${LABELS[type].toLowerCase()}`; search.setAttribute("aria-label", `Search ${LABELS[type]}`);
     const status = document.createElement("select"); status.setAttribute("aria-label", `Filter ${LABELS[type]} by status`); for (const [value, label] of [["active", "Active"], ["", "All statuses"]]) { const option = document.createElement("option"); option.value = value; option.textContent = label; status.append(option); }

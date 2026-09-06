@@ -48,6 +48,30 @@ test("property ownership and linked-loan assets archive and restore", async () =
   await service.transition("property", property.id, "archive"); assert.equal((await service.list("property")).length, 0); await service.transition("property", property.id, "restore"); assert.equal((await service.list("property")).length, 1); database.close();
 });
 
+test("other valuables persist opening value and net-worth inclusion policy", async () => { const { database, service } = await fixture(); const result = await service.save("otherAsset", { nickname: "Family gold", assetType: "gold", openingEstimatedValuePaise: 250000, valuationDate: "2026-09-05", includeInNetWorth: true, status: "active" }); assert.equal(result.ok, true); assert.equal((await service.list("otherAsset"))[0].assetType, "gold"); assert.equal((await runTransaction(database, ["openingPositions"], "readonly", ({ store }) => store("openingPositions").get(`opening_${result.record.id}`))).amountPaise, 250000); database.close(); });
+
+test("physical-asset depreciation requires explicit bounded settings", async () => {
+  const { database, service } = await fixture();
+  const invalid = await service.save("vehicle", { nickname: "Car", vehicleType: "car", openingEstimatedValuePaise: 1000000, valuationDate: "2026-07-15", includeInNetWorth: true, status: "active", depreciationMethod: "straight-line", depreciationAnnualRateBasisPoints: 12000, depreciationResidualValuePaise: 1200000, depreciationStartDate: "2026-07-15" });
+  assert.equal(invalid.ok, false);
+  assert.ok(invalid.errors.depreciationAnnualRateBasisPoints);
+  assert.ok(invalid.errors.depreciationResidualValuePaise);
+  const valid = await service.save("vehicle", { nickname: "Car", vehicleType: "car", openingEstimatedValuePaise: 1000000, valuationDate: "2026-07-15", includeInNetWorth: true, status: "active", depreciationMethod: "straight-line", depreciationAnnualRateBasisPoints: 1000, depreciationResidualValuePaise: 200000, depreciationStartDate: "2026-07-15" });
+  assert.equal(valid.ok, true);
+  assert.equal(valid.record.depreciationMethod, "straight-line");
+  database.close();
+});
+
+test("entity edits invalidate snapshots from the earliest affected date", async () => {
+  const { database, service } = await fixture();
+  const created = (await service.save("account", account)).record;
+  await runTransaction(database, ["netWorthSnapshots"], "readwrite", ({ store }) => store("netWorthSnapshots").add({ id: "snapshot_2026", asOfDate: "2026-07-31", stale: false, archived: false, createdAt: "2026-07-31T00:00:00.000Z", updatedAt: "2026-07-31T00:00:00.000Z" }));
+  await service.save("account", { ...created, openingBalancePaise: 0, includeInNetWorth: false, effectiveDate: "2026-07-15" });
+  const snapshot = await runTransaction(database, ["netWorthSnapshots"], "readonly", ({ store }) => store("netWorthSnapshots").get("snapshot_2026"));
+  assert.equal(snapshot.stale, true);
+  database.close();
+});
+
 test("income and commitment configuration creates no occurrences or transactions", async () => {
   const { database, service } = await fixture();
   assert.equal((await service.save("incomeSource", { name: "Salary", incomeType: "salary", expectedAmountPaise: 1000, frequency: "monthly", status: "active", estimateType: "fixed" })).ok, true);

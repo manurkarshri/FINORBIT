@@ -61,3 +61,7 @@ Every milestone report states new sensitive data, permissions, network connectio
 ## Reporting vulnerabilities
 
 Do not place real financial data or secrets in a public issue. Report suspected vulnerabilities privately to the repository owner with reproduction steps using synthetic data.
+
+## Milestone 13 audit
+
+The production dependency audit, source secret scan, injection review, CSP/service-worker review, storage-pressure controls, large-history validation, and recovery documentation are recorded in [docs/SECURITY_RESILIENCE_AUDIT.md](docs/SECURITY_RESILIENCE_AUDIT.md). User-facing privacy and recovery expectations are documented in [docs/PRIVACY_NOTICE.md](docs/PRIVACY_NOTICE.md) and [docs/RECOVERY_GUIDE.md](docs/RECOVERY_GUIDE.md).

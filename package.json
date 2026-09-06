@@ -1,15 +1,16 @@
 {
   "name": "finorbit",
-  "version": "1.0.0-m4",
+  "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@11.7.0",
   "type": "module",
-  "description": "FinOrbit local-first personal finance PWA foundation",
+  "description": "FinOrbit local-first personal finance and wealth PWA",
   "scripts": {
     "serve": "node scripts/serve.mjs",
+    "build": "node scripts/build-release.mjs",
     "test": "node --test",
     "validate": "node scripts/validate-static.mjs",
-    "check": "pnpm run validate && pnpm test"
+    "check": "pnpm run validate && pnpm test && pnpm run build"
   },
   "engines": {
     "node": ">=20"

@@ -8,18 +8,18 @@ The governing sequence is defined in `docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md`.
 - **M1 Modular PWA foundation:** complete; squash-merged in PR #2.
 - **M2 Database and security foundation:** complete; squash-merged in PR #3.
 - **M3 Guided onboarding and entity management:** complete; squash-merged in PR #4.
-- **M4 Transaction-first main experience:** implemented on `codex/transactions`; draft pull-request review pending.
-- **M5 Wealth Impact Engine:** pending.
-- **M6 Recurring income, expenses and reminders:** pending.
-- **M7 Categories, family and budgets:** pending.
-- **M8 Investments and price syncing:** pending.
-- **M9 Properties, vehicles and other assets:** pending.
-- **M10 Forecasting, goals and planning:** pending.
-- **M11 Reports and exports:** pending.
-- **M12 Reconciliation and data integrity:** pending.
-- **M13 Security, privacy and resilience audit:** pending.
-- **M14 UX, accessibility and performance:** pending.
-- **M15 Production release:** pending.
+- **M4 Transaction-first main experience:** implemented and locally/CI validated on `codex/transactions`; draft PR #5 review and merge pending.
+- **M5 Wealth Impact Engine:** implemented and locally verified on `codex/wealth-impact`; merge/review remains dependent on Milestone 4 landing first.
+- **M6 Recurring income, expenses and reminders:** implemented and locally verified on `codex/recurring`; merge/review remains dependent on the stacked M4–M5 branches landing first.
+- **M7 Categories, family and budgets:** implemented and locally verified on `codex/categories-budgets`; merge/review remains dependent on earlier milestone branches landing first.
+- **M8 Investments and price syncing:** implemented and locally verified on `codex/investments-pricing`; merge/review remains dependent on earlier milestone branches landing first.
+- **M9 Properties, vehicles and other assets:** implemented and locally verified on `codex/physical-assets`; merge/review remains dependent on earlier milestone branches landing first.
+- **M10 Forecasting, goals and planning:** implemented and locally verified on `codex/forecasting-goals`; merge/review remains dependent on earlier milestone branches landing first.
+- **M11 Reports and exports:** implemented and locally verified on `codex/reports-exports`; merge/review remains dependent on earlier milestone branches landing first.
+- **M12 Reconciliation and data integrity:** implemented and locally verified on `codex/reconciliation-integrity`; merge/review remains dependent on earlier milestone branches landing first.
+- **M13 Security, privacy and resilience audit:** implemented and locally verified on `codex/security-resilience`; final release review remains dependent on earlier milestone branches landing first.
+- **M14 UX, accessibility and performance:** implemented and locally/browser verified on `codex/ux-accessibility-performance`; final release review remains.
+- **M15 Production release:** local release candidate verified on `codex/v1-production-release`; publication awaits reviewed integration to `main`, GitHub Pages enablement, tag, and GitHub Release.
 
 ## Prioritized Version 1 backlog
 

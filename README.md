@@ -8,7 +8,7 @@ FinOrbit is a new, independent, local-first personal finance and wealth-manageme
 
 ## Project status
 
-Milestone 4 is implemented on `codex/transactions`: FinOrbit now provides transaction-first daily entry, explicit posting effects, history/search, replacement editing, void/restore, splits, receipts, and opening-position-based account/liability projections. It intentionally contains no wealth analytics, recurrence generation, budgets, reports, forecasts, or market valuation.
+The complete Version 1.0 local release candidate is implemented on `codex/v1-production-release`. Milestones 0–14 are complete; the Milestone 15 local acceptance gate passes. Publication remains pending reviewed integration to `main`, GitHub Pages enablement, the `v1.0.0` tag, and the GitHub Release.
 
 The governing specification is [docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md](docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md).
 
@@ -33,8 +33,17 @@ Version 1 explicitly excludes bank/broker synchronization, cloud sync, multi-use
 - [Database and security foundation](docs/DATABASE_AND_SECURITY_FOUNDATION.md)
 - [Onboarding and entity management](docs/ONBOARDING_AND_ENTITY_MANAGEMENT.md)
 - [Transaction engine and daily use](docs/TRANSACTION_ENGINE_AND_DAILY_USE.md)
-
-## Development status
+- [Wealth Impact Engine](docs/WEALTH_IMPACT_ENGINE.md)
+- [Categories, family and budgets](docs/CATEGORIES_FAMILY_BUDGETS.md)
+- [Investments and pricing](docs/INVESTMENTS_AND_PRICING.md)
+- [Physical assets](docs/PHYSICAL_ASSETS.md)
+- [Forecasting and goals](docs/FORECASTING_AND_GOALS.md)
+- [Reports and exports](docs/REPORTS_AND_EXPORTS.md)
+- [Reconciliation and integrity](docs/RECONCILIATION_AND_INTEGRITY.md)
+- [User guide](docs/USER_GUIDE.md)
+- [Privacy notice](docs/PRIVACY_NOTICE.md)
+- [Recovery guide](docs/RECOVERY_GUIDE.md)
+- [Version 1 release notes](docs/RELEASE_NOTES_V1.0.0.md)
 
 ## Local development
 
