@@ -1,6 +1,7 @@
-const ASSET_DIMENSIONS = new Set(["account-asset", "investment-asset", "physical-asset", "receivable"]);
+const ASSET_DIMENSIONS = new Set(["account-asset", "investment-asset", "receivable"]);
 const LIABILITY_DIMENSIONS = new Set(["creditCard-liability", "loan-liability"]);
-const VALUED_ENTITY_TYPES = new Set(["investment", "property", "vehicle", "otherAsset"]);
+const VALUED_ENTITY_TYPES = new Set(["investment"]);
+const FINANCIAL_ENTITY_TYPES = new Set(["account", "creditCard", "loan", "investment", "receivable"]);
 
 function assertDate(value, field) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? "") || Number.isNaN(Date.parse(`${value}T00:00:00Z`))) {
@@ -73,7 +74,7 @@ export function buildWealthSnapshot({ asOfDate, periodStart, openingPositions = 
   };
 
   for (const opening of openingPositions) {
-    if (opening.effectiveDate <= asOfDate) addPosition(opening.entityType, opening.entityId, positionKind(opening), opening.amountPaise);
+    if (FINANCIAL_ENTITY_TYPES.has(opening.entityType) && opening.effectiveDate <= asOfDate) addPosition(opening.entityType, opening.entityId, positionKind(opening), opening.amountPaise);
   }
 
   const includedEffects = effects.filter((effect) => {

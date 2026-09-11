@@ -5,7 +5,7 @@ const ICONS = {
   transactions: "↗",
   accounts: "◎",
   plan: "◇",
-  wealth: "◌",
+  wealth: "₹",
   more: "•••",
   settings: "⚙",
 };

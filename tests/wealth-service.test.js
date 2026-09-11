@@ -79,7 +79,7 @@ test("recording a validated valuation invalidates later snapshots", async () => 
   assert.equal(valuation.currency, "INR");
   assert.equal((await wealth.list()).length, 0);
   assert.equal((await wealth.list({ includeStale: true }))[0].stale, true);
-  await assert.rejects(wealth.recordValuation({ entityType: "account", entityId: "account_bank", valuePaise: 1, valuationDate: "2026-09-10", source: "manual" }), /supported/);
+  await assert.rejects(wealth.recordValuation({ entityType: "account", entityId: "account_bank", valuePaise: 1, valuationDate: "2026-09-10", source: "manual" }), /financial investment/);
   database.close();
 });
 
@@ -110,22 +110,16 @@ test("provider unit prices derive exact market values from decimal quantity", as
   database.close();
 });
 
-test("configured depreciation supplies a transparent value only without an explicit valuation", async () => {
+test("physical items remain available for expense attribution but are excluded from the money position", async () => {
   const { database, wealth } = await fixture();
   await runTransaction(database, ["vehicles", "openingPositions"], "readwrite", async ({ store }) => {
     await store("vehicles").add({ id: "vehicle_car", nickname: "Car", vehicleType: "car", status: "active", archived: false, openingEstimatedValuePaise: 1000000, depreciationMethod: "straight-line", depreciationAnnualRateBasisPoints: 1000, depreciationResidualValuePaise: 200000, depreciationStartDate: "2025-09-05" });
     await store("openingPositions").add({ id: "opening_car", entityType: "vehicle", entityId: "vehicle_car", amountPaise: 1000000, effectiveDate: "2025-09-05" });
   });
-  let snapshot = await wealth.calculateWithExplanation("2026-09-05");
-  let vehicle = snapshot.positions.find(({ entityId }) => entityId === "vehicle_car");
-  assert.equal(vehicle.valuePaise, 920000);
-  assert.equal(vehicle.valuationSource, "depreciation");
-  assert.equal(snapshot.explanation.assetDepreciationPaise, -80000);
-  await wealth.recordValuation({ entityType: "vehicle", entityId: "vehicle_car", valuePaise: 950000, valuationDate: "2026-09-05", source: "manual" });
-  snapshot = await wealth.calculate("2026-09-05");
-  vehicle = snapshot.positions.find(({ entityId }) => entityId === "vehicle_car");
-  assert.equal(vehicle.valuePaise, 950000);
-  assert.equal(vehicle.valuationSource, "manual");
+  const snapshot = await wealth.calculateWithExplanation("2026-09-05");
+  assert.equal(snapshot.positions.some(({ entityId }) => entityId === "vehicle_car"), false);
+  assert.equal(snapshot.netWorthPaise, 1225000);
+  await assert.rejects(wealth.recordValuation({ entityType: "vehicle", entityId: "vehicle_car", valuePaise: 950000, valuationDate: "2026-09-05", source: "manual" }), /financial investment/);
   database.close();
 });
 

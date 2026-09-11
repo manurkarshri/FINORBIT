@@ -2,7 +2,7 @@
   "id": "./",
   "name": "FinOrbit — Your Complete Financial World",
   "short_name": "FinOrbit",
-  "description": "A local-first personal finance and wealth-management Progressive Web Application.",
+  "description": "A local-first personal finance and money-tracking Progressive Web Application.",
   "lang": "en-IN",
   "dir": "ltr",
   "start_url": "./#/transactions",

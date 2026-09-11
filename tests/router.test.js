@@ -15,7 +15,7 @@ test("falls back to transactions for empty and unknown routes", () => {
 
 test("normalizes route query fragments without changing metadata", () => {
   assert.equal(parseRoute("#/accounts?view=all"), "accounts");
-  assert.deepEqual(getRouteMetadata("wealth"), { label: "Wealth", title: "Wealth · FinOrbit" });
+  assert.deepEqual(getRouteMetadata("wealth"), { label: "Money", title: "Money · FinOrbit" });
   assert.deepEqual(getRouteMetadata("unknown"), ROUTES.transactions);
 });
 

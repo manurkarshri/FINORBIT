@@ -2,11 +2,11 @@ import { createAuditEvent } from "../database/audit.js";
 import { runTransaction } from "../database/transaction.js";
 import { createOpaqueId } from "../database/validation.js";
 import { buildWealthSnapshot, explainWealthChange } from "../engines/wealth-engine.js";
-import { assessFreshness, multiplyPriceByQuantity, straightLineDepreciation } from "../engines/valuation-engine.js";
+import { assessFreshness, multiplyPriceByQuantity } from "../engines/valuation-engine.js";
 
-const ENTITY_STORES = ["accounts", "creditCards", "loans", "investments", "properties", "vehicles", "otherAssets"];
+const ENTITY_STORES = ["accounts", "creditCards", "loans", "investments"];
 const INPUT_STORES = ["openingPositions", "transactions", "transactionEffects", "marketPrices", ...ENTITY_STORES];
-const ENTITY_TYPES = { accounts: "account", creditCards: "creditCard", loans: "loan", investments: "investment", properties: "property", vehicles: "vehicle", otherAssets: "otherAsset" };
+const ENTITY_TYPES = { accounts: "account", creditCards: "creditCard", loans: "loan", investments: "investment" };
 
 function monthStart(date) {
   return `${date.slice(0, 7)}-01`;
@@ -48,18 +48,10 @@ export function createWealthService(database, { now = () => new Date().toISOStri
       openingPositions: await store("openingPositions").getAll(),
       transactions: await store("transactions").getAll(),
       effects: await store("transactionEffects").getAll(),
-      valuations: (await store("marketPrices").getAll()).map(valuationFromPrice),
-      depreciableAssets: [...await store("properties").getAll(), ...await store("vehicles").getAll()],
+      valuations: (await store("marketPrices").getAll()).map(valuationFromPrice).filter(({ entityType }) => entityType === "investment"),
       entities: Object.fromEntries(await Promise.all(ENTITY_STORES.map(async (name) => [name, await store(name).getAll()]))),
     }));
     const excludedEntityKeys = Object.entries(inputs.entities).flatMap(([storeName, records]) => records.filter(({ includeInNetWorth }) => includeInNetWorth === false).map(({ id: entityId }) => `${ENTITY_TYPES[storeName]}:${entityId}`));
-    const explicitlyValued = new Set(inputs.valuations.filter(({ valuationDate }) => valuationDate <= asOfDate).map(({ entityType, entityId }) => `${entityType}:${entityId}`));
-    for (const asset of inputs.depreciableAssets) if (asset.depreciationMethod === "straight-line") {
-      const entityType = asset.propertyType ? "property" : "vehicle";
-      if (explicitlyValued.has(`${entityType}:${asset.id}`)) continue;
-      const depreciation = straightLineDepreciation({ baseValuePaise: asset.openingEstimatedValuePaise, residualValuePaise: asset.depreciationResidualValuePaise, annualRateBasisPoints: asset.depreciationAnnualRateBasisPoints, startDate: asset.depreciationStartDate, asOfDate });
-      inputs.valuations.push({ id: `depreciation_${asset.id}_${asOfDate}`, entityType, entityId: asset.id, valuePaise: depreciation.valuePaise, valuationDate: asOfDate, source: "depreciation", depreciationPaise: depreciation.depreciationPaise, staleAfterDays: 0 });
-    }
     return buildWealthSnapshot({ asOfDate, periodStart, openingPositions: inputs.openingPositions, transactions: inputs.transactions, effects: inputs.effects, valuations: inputs.valuations, excludedEntityKeys });
   }
 
@@ -121,14 +113,14 @@ export function createWealthService(database, { now = () => new Date().toISOStri
   }
 
   async function listValuations({ entityType, entityId } = {}) {
-    const valuations = (await runTransaction(database, ["marketPrices"], "readonly", ({ store }) => store("marketPrices").getAll())).map(valuationFromPrice);
+    const valuations = (await runTransaction(database, ["marketPrices"], "readonly", ({ store }) => store("marketPrices").getAll())).map(valuationFromPrice).filter(({ entityType }) => entityType === "investment");
     const asOfDate = new Date().toISOString().slice(0, 10);
     return valuations.filter((item) => (!entityType || item.entityType === entityType) && (!entityId || item.entityId === entityId)).map((item) => ({ ...item, freshness: assessFreshness(item, asOfDate) })).sort((a, b) => b.valuationDate.localeCompare(a.valuationDate));
   }
 
   async function recordValuation(input) {
     const entityType = input.entityType;
-    if (!["investment", "property", "vehicle", "otherAsset"].includes(entityType)) throw new TypeError("Choose a supported valued asset type.");
+    if (entityType !== "investment") throw new TypeError("Choose a financial investment.");
     if (!input.entityId) throw new TypeError("Valuation requires a stable entity reference.");
     const calculatedValue = input.valuePaise ?? (input.unitPricePaise != null && input.quantity ? multiplyPriceByQuantity(input.unitPricePaise, input.quantity) : undefined);
     if (!Number.isSafeInteger(calculatedValue) || calculatedValue < 0) throw new TypeError("Valuation must provide a non-negative total value or a valid unit price and quantity.");

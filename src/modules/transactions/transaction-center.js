@@ -42,7 +42,7 @@ export function createTransactionCenter({ database, transactions, receipts, live
 
     const optional = [];
     if (!["expense", "income"].includes(type)) optional.push(inputField("merchantText", "Merchant or source (optional)"));
-    if (["expense", "income"].includes(type)) optional.push(selectField("propertyId", "Related property", entities.properties), selectField("vehicleId", "Related vehicle", entities.vehicles), selectField("otherAssetId", "Related other asset", entities.otherAssets));
+    if (type === "expense") optional.push(selectField("propertyId", "For home, land or property", entities.properties), selectField("vehicleId", "For bike, car or vehicle", entities.vehicles), selectField("otherAssetId", "For another tracking item", entities.otherAssets));
     optional.push(inputField("notes", "Notes"), inputField("tags", "Tags, comma separated"));
     const receiptField = inputField("receipt", "Receipt image or PDF", "file"); receiptField.querySelector("input").accept = "image/jpeg,image/png,image/webp,application/pdf"; optional.push(receiptField);
     if (new URLSearchParams(location.search).get("preview") === "1") { const sample = element("button", "Attach synthetic preview receipt", "button button--secondary"); sample.type = "button"; sample.onclick = () => { attachPreviewReceipt = true; sample.disabled = true; sample.textContent = "Synthetic preview receipt attached"; }; optional.push(sample); }

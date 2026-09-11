@@ -1,6 +1,6 @@
 # FinOrbit 1.0 simple user guide
 
-FinOrbit is a private, installable personal-finance application for recording daily money, planning commitments, and understanding your overall wealth. It works in your browser and stores information locally on your device.
+FinOrbit is a private, installable personal-finance application for recording daily money, planning commitments, and understanding your financial position. It works in your browser and stores information locally on your device.
 
 Open FinOrbit at [https://manurkarshri.github.io/FINORBIT/](https://manurkarshri.github.io/FINORBIT/).
 
@@ -68,19 +68,15 @@ Add recurring bills and obligations such as rent, school fees, insurance, subscr
 
 Add investments you want included in your portfolio. Cost and quantity are kept separately from the latest value. You remain responsible for checking any manual or provider price.
 
-### 9–10. Property and vehicles
-
-Add owned property and vehicles, their estimated values, ownership percentage where applicable, and any linked loan. Choose whether each item should be included in net worth.
-
-### 11. Emergency-fund target
+### 9. Emergency-fund target
 
 Set the number of months of expenses you would like to keep as an emergency reserve. This provides planning context; it is not automated advice.
 
-### 12. Opening summary
+### 10. Opening summary
 
-Review your starting accounts, liabilities, investments, and assets. Correct inaccurate opening amounts before continuing.
+Review your starting accounts, liabilities, and financial investments. Correct inaccurate opening amounts before continuing.
 
-### 13. Review and complete
+### 11. Review and complete
 
 Finish setup when the profile and at least one active account are present. FinOrbit then opens the main application.
 
@@ -142,11 +138,13 @@ You can add custom categories, subcategories, and family members. Hiding a categ
 
 Forecasts show expected balances for the next 7 and 30 days. Set a minimum cash reserve and choose whether uncertain recurring estimates should be included. Goals show the target, current amount, remaining gap, target date, and required monthly contribution.
 
-### Wealth — net worth and owned assets
+### Money — your financial position and cash flow
 
-Wealth combines active account balances, card and loan liabilities, investments, property, vehicles, and other valuables. It shows the calculation date and the source or freshness of valuations.
+Money combines active bank, cash and wallet balances, card and loan liabilities, shares, mutual funds, fixed deposits and other financial investments. It also shows monthly income, expenses and savings.
 
-You can review net worth, save dated snapshots, recalculate month-end history, record investment prices, add physical assets, link loans, and decide which assets count toward net worth. A market-data failure does not delete holdings; FinOrbit visibly falls back to an eligible cached or manual value. Review stale estimates before relying on totals.
+Homes, land, vehicles and valuables are intentionally excluded from this financial position. They can instead be created as simple **Expense tracking items** in Settings. For example, add Bike 1 and Bike 2, then choose the relevant bike under **Optional details and receipt** when logging fuel or servicing expenses.
+
+You can save dated financial snapshots, recalculate month-end history and record investment prices. Detailed change explanations are collapsed until you need them. A market-data failure does not delete holdings; FinOrbit visibly falls back to an eligible cached or manual value.
 
 ### More — reports, security, and data
 
@@ -213,9 +211,9 @@ Clearing only the visible list of previously visited pages normally does not rem
 - Use accurate merchants and categories so reports remain useful.
 - Confirm, postpone, or skip due recurring items.
 - Review budgets weekly and reconcile accounts monthly.
-- Review investment and asset values before assessing net worth.
+- Review financial investment values before assessing your money position.
 - Generate a monthly report for income, spending, and savings.
-- Download an encrypted backup at least monthly and after major updates.
+- Create a complete encrypted backup at least weekly and after major updates.
 
 ## Updates and offline use
 
@@ -270,8 +268,9 @@ For more detail, read the [privacy notice](PRIVACY_NOTICE.md), [recovery guide](
 | Manage bills and recurring income | Plan → Recurring plan |
 | Create categories, family members, or budgets | Plan → Household budgets |
 | Review forecasts or goals | Plan → Forecasts and goals |
-| Review net worth or snapshots | Wealth |
-| Manage investments, property, vehicles, or valuables | Wealth |
+| Review financial position, money flow, or snapshots | Money |
+| Manage investments | Money or Settings |
+| Add a home, land, bike, car, or other expense tracking item | Settings → Expense tracking items |
 | Add a new bank, broker account, card, loan, income source, commitment, or investment | Settings |
 | Filter spending by category or merchant | More → Reports and exports |
 | Export PDF, spreadsheet, or CSV | More → Reports and exports |
