@@ -9,7 +9,7 @@ Open FinOrbit at [https://manurkarshri.github.io/FINORBIT/](https://manurkarshri
 - FinOrbit does not connect to your bank, move money, make investments, or provide financial advice.
 - You enter and maintain your own financial information.
 - Your data stays in the browser profile on the device where you use FinOrbit. There is no FinOrbit cloud account or automatic device-to-device sync.
-- Clearing browser/site data, deleting the browser profile, or losing the device can remove your records. Download encrypted backups regularly.
+- Clearing browser/site data, deleting the browser profile, or losing the device can remove your records. Create a complete encrypted backup at least weekly.
 - Amounts use Indian rupees (INR). Opening balances describe where you started; they are not income or expenses.
 
 ## Install FinOrbit on a phone
@@ -178,14 +178,16 @@ FinOrbit cannot recover a forgotten app-lock secret or backup passphrase.
 
 ### Create a backup
 
-Create an encrypted backup after setup and after significant changes:
+FinOrbit shows backup status on the Transactions page and reminds you when seven days have passed. Create a backup after setup, at least weekly, and after significant changes:
 
-1. Select **Download encrypted backup**.
+1. Open **More → Security, privacy & data** and select **Create complete encrypted backup**.
 2. Enter a strong passphrase you can remember or store safely.
-3. Save the JSON file somewhere separate from the device, such as encrypted storage.
+3. Save or move the downloaded JSON file to **iCloud Drive**, **Google Drive**, or another safe location outside the browser.
 4. Keep more than one recent backup.
 
-A standard backup is also available but is not protected by a backup passphrase. Standard backups omit app-lock credentials and receipt contents. To preserve receipt files, select **Include receipt files in encrypted backup** before downloading an encrypted backup; the resulting file may be considerably larger.
+The complete encrypted backup always includes all records, app-lock configuration, and receipt contents, so the file can become large. FinOrbit records when the complete backup was generated, but browsers do not tell the app whether you later moved it to cloud storage. Confirm the file appears in your chosen folder before clearing browser data.
+
+An unencrypted data copy is available under **Restore and other backup options** for exceptional needs. It is not protected by a passphrase and omits receipt contents, so it does not satisfy the weekly complete-backup reminder.
 
 FinOrbit cannot silently create or continuously update a permanent folder on every mobile device. Browsers deliberately require user permission for downloads and restrict background file access. The downloaded encrypted JSON file is therefore the independent copy that survives removal of FinOrbit's site data. Store it outside the browser—in device files, encrypted cloud storage, or another protected location.
 

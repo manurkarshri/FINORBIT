@@ -158,7 +158,7 @@ async function bootstrap() {
       });
     },
     onLock: () => lockManager?.lock("manual"),
-    onStandardBackup: async () => { const payload = await createBackup(database); await setSetting(database, "backup.lastExportAt", payload.exportedAt); return payload; },
+    onStandardBackup: () => createBackup(database),
     onEncryptedBackup: async (secret, { includeReceipts = false } = {}) => { const payload = await createBackup(database, { encrypted: true, secret, includeReceipts }); await setSetting(database, "backup.lastExportAt", new Date().toISOString()); return payload; },
     onBackupStatus: async () => (await getSetting(database, "backup.lastExportAt"))?.value,
     onRestorePreview: async (file) => {
