@@ -32,7 +32,7 @@ The application shell works offline after it has loaded successfully at least on
 
 ## First-time setup
 
-FinOrbit opens a guided 13-step setup the first time it is used. You can use **Back**, **Save and add another**, **Save and continue**, or **Save and exit**. Each financial section shows the records already added, so you can enter several accounts, cards, loans, income sources, commitments, or investments before moving on. Optional sections may be left empty and completed later.
+FinOrbit opens a guided 13-step setup the first time it is used. You can use **Back**, **Save and add another**, **Save and continue**, or **Save draft and exit**. Saving a draft preserves what is typed but does not create that financial record until you use one of the two “Save” actions. Each section shows the records already added, so you can enter several accounts, cards, loans, income sources, commitments, or investments before moving on. Optional sections may be left empty and completed later.
 
 ### 1. Welcome
 
@@ -88,7 +88,9 @@ Finish setup when the profile and at least one active account are present. FinOr
 
 ### Transactions — record daily activity
 
-Select a quick action or **Add transaction**, then choose the correct type, date, amount, account, category, merchant, and any relevant card, loan, investment, or asset.
+The Transactions page keeps **Add expense** and **Add income** as the two main actions. These open a short form containing only amount, account, category, merchant/source, and date. Notes, tags, related assets, and receipt upload are grouped under **Optional details and receipt**.
+
+Open **Transfers, cards, loans and investments** only when you need a transfer, card payment, loan payment, investment transaction, refund, or another specialised transaction. Detailed accounting fields appear only for the transaction types that require them—for example, principal, interest, and fees for a loan payment.
 
 Common examples:
 
@@ -183,7 +185,9 @@ Create an encrypted backup after setup and after significant changes:
 3. Save the JSON file somewhere separate from the device, such as encrypted storage.
 4. Keep more than one recent backup.
 
-A standard backup is also available but is not protected by a backup passphrase. Standard backups omit app-lock credentials and receipt contents.
+A standard backup is also available but is not protected by a backup passphrase. Standard backups omit app-lock credentials and receipt contents. To preserve receipt files, select **Include receipt files in encrypted backup** before downloading an encrypted backup; the resulting file may be considerably larger.
+
+FinOrbit cannot silently create or continuously update a permanent folder on every mobile device. Browsers deliberately require user permission for downloads and restrict background file access. The downloaded encrypted JSON file is therefore the independent copy that survives removal of FinOrbit's site data. Store it outside the browser—in device files, encrypted cloud storage, or another protected location.
 
 ### Restore a backup
 
@@ -199,7 +203,7 @@ Restore validates the full backup before replacing data. It does not merge two s
 
 Use **Check storage & database** to review storage, receipt usage, persistence, and database readability. **Request persistent storage** asks the browser to reduce automatic data eviction, but backups remain necessary.
 
-**Reset all local data** permanently removes FinOrbit records from the current browser profile. Export and verify a backup first.
+Clearing only the visible list of previously visited pages normally does not remove FinOrbit. Choosing an option that also clears cookies, site data, app data, or browser storage will remove it. **Reset all local data** also permanently removes FinOrbit records from the current browser profile. Export and verify a backup first.
 
 ## Recommended routine
 
