@@ -119,6 +119,8 @@
 .wealth-card strong { font-size: clamp(1.25rem, 3vw, 1.8rem); }
 .wealth-card--primary { color: white; background: var(--color-accent-strong); border-color: transparent; }
 .wealth-card--primary p { color: inherit; }
+.wealth-explanation > summary { cursor: pointer; font-size: var(--text-lg); font-weight: 800; }
+.wealth-explanation[open] > summary { margin-bottom: 1rem; }
 .wealth-history ul { display: grid; gap: .4rem; padding-left: 1.25rem; }
 .wealth-history .is-stale { color: var(--color-warning); font-weight: 700; }
 .wealth-breakdown { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem 1rem; }

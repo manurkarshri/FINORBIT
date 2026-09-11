@@ -28,11 +28,11 @@ const ROUTE_CONTENT = Object.freeze({
     note: "This screen intentionally shows no sample financial figures.",
   },
   wealth: {
-    eyebrow: "Understand the whole picture",
-    title: "Wealth",
+    eyebrow: "Understand your money",
+    title: "Money",
     symbol: "◌",
-    emptyTitle: "Connect assets and liabilities safely",
-    description: "Net worth, investments and physical assets belong to later, calculation-tested milestones.",
+    emptyTitle: "Connect financial assets and debts safely",
+    description: "Bank balances, investments, cards, loans, income and expenses form this overview.",
     note: "No wealth calculation engine exists yet.",
   },
   more: {
@@ -86,8 +86,8 @@ export function createApp({ root, header, navigation, main, statusRegion, liveRe
     if (latestState.activeRoute === "accounts" && reconciliationCenter) { main.replaceChildren(reconciliationCenter.element); reconciliationCenter.start(); if (entityService) import("../modules/entities/entity-manager.js").then(({ createEntityManager }) => { if (latestState.activeRoute === "accounts" && reconciliationCenter.element.isConnected) main.append(createEntityManager("accounts", entityService)); }); if (focus) main.focus({ preventScroll: false }); return; }
     if (latestState.activeRoute === "plan" && recurringCenter) { main.replaceChildren(recurringCenter.element, householdCenter?.element, planningCenter?.element); recurringCenter.start(); householdCenter?.start(); planningCenter?.start(); if (focus) main.focus({ preventScroll: false }); return; }
     if (latestState.activeRoute === "more" && reportsCenter) { main.replaceChildren(reportsCenter.element); reportsCenter.start(); if (securityCenter) main.append(securityCenter); if (focus) main.focus({ preventScroll: false }); return; }
-    if (latestState.activeRoute === "settings" && settingsCenter) { main.replaceChildren(settingsCenter.element); settingsCenter.start(); if (focus) main.focus({ preventScroll: false }); return; }
-    if (latestState.activeRoute === "wealth" && wealthCenter) { main.replaceChildren(wealthCenter.element, portfolioCenter?.element, physicalAssetsCenter?.element); wealthCenter.start(); portfolioCenter?.start(); physicalAssetsCenter?.start(); if (entityService) import("../modules/entities/entity-manager.js").then(({ createEntityManager }) => { if (latestState.activeRoute === "wealth" && wealthCenter.element.isConnected) main.append(createEntityManager("wealth", entityService)); }); if (focus) main.focus({ preventScroll: false }); return; }
+    if (latestState.activeRoute === "settings" && settingsCenter) { main.replaceChildren(settingsCenter.element, physicalAssetsCenter?.element); settingsCenter.start(); physicalAssetsCenter?.start(); if (focus) main.focus({ preventScroll: false }); return; }
+    if (latestState.activeRoute === "wealth" && wealthCenter) { main.replaceChildren(wealthCenter.element, portfolioCenter?.element); wealthCenter.start(); portfolioCenter?.start(); if (focus) main.focus({ preventScroll: false }); return; }
     const content = ROUTE_CONTENT[latestState.activeRoute] ?? ROUTE_CONTENT.transactions;
     const heading = document.createElement("header");
     heading.className = "route-heading";

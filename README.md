@@ -2,9 +2,9 @@
 
 **Your Complete Financial World**
 
-Track Money. Understand Wealth.
+Track Money. Understand Your Financial Position.
 
-FinOrbit is a new, independent, local-first personal finance and wealth-management Progressive Web Application. Version 1 will connect daily transactions with accounts, liabilities, investments, assets, forecasts, reports, and net worth without requiring a cloud account.
+FinOrbit is a local-first personal finance Progressive Web Application. Version 1 connects daily transactions with accounts, liabilities, financial investments, forecasts, reports, and a clear money position without requiring a cloud account. Homes and vehicles can be named only when useful for separating related expenses.
 
 ## Project status
 
@@ -14,7 +14,7 @@ The governing specification is [docs/FINORBIT_MASTER_DEVELOPMENT_PLAN.md](docs/F
 
 ## Version 1 boundaries
 
-Version 1 is an installable, offline-capable, mobile-first PWA deployed to GitHub Pages. It uses browser-native APIs, IndexedDB, modular HTML/CSS/JavaScript, and Indian Rupee formatting. It includes transactions, accounts, cards, loans, recurring items, budgets, investments, physical assets, forecasting, reports, reconciliation, encrypted backup/restore, and security controls.
+Version 1 is an installable, offline-capable, mobile-first PWA deployed to GitHub Pages. It uses browser-native APIs, IndexedDB, modular HTML/CSS/JavaScript, and Indian Rupee formatting. It includes transactions, accounts, cards, loans, recurring items, budgets, investments, lightweight expense-tracking items, forecasting, reports, reconciliation, encrypted backup/restore, and security controls.
 
 Version 1 explicitly excludes bank/broker synchronization, cloud sync, multi-user collaboration, tax filing, automated advice or payments, OCR, trading, and LedgerBook compatibility/import.
 

@@ -4,7 +4,7 @@ export const ROUTES = Object.freeze({
   transactions: { label: "Transactions", title: "Transactions · FinOrbit" },
   accounts: { label: "Accounts", title: "Accounts · FinOrbit" },
   plan: { label: "Plan", title: "Plan · FinOrbit" },
-  wealth: { label: "Wealth", title: "Wealth · FinOrbit" },
+  wealth: { label: "Money", title: "Money · FinOrbit" },
   more: { label: "More", title: "More · FinOrbit" },
   settings: { label: "Settings", title: "Settings · FinOrbit" },
 });

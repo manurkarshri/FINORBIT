@@ -4,18 +4,25 @@ import { createAuditEvent } from "../database/audit.js";
 
 export const ONBOARDING_STAGES = Object.freeze([
   "welcome", "profile", "accounts", "credit-cards", "loans", "income-sources", "commitments",
-  "investments", "properties", "vehicles", "emergency-fund", "opening-summary", "review",
+  "investments", "emergency-fund", "opening-summary", "review",
 ]);
+
+function currentStage(progress) {
+  if (!progress) return 0;
+  if (progress.completed) return ONBOARDING_STAGES.length - 1;
+  const legacyStages = [0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 8, 9, 10];
+  return progress.flowVersion === 2 ? progress.stage : legacyStages[progress.stage] ?? 0;
+}
 
 export function createOnboardingService(database, { now = () => new Date().toISOString() } = {}) {
   async function read() {
     const [progress, profile] = await runTransaction(database, ["settings", "profiles"], "readonly", async ({ store }) => [await store("settings").get("onboarding.progress"), (await store("profiles").getAll())[0]]);
-    return { stage: progress?.stage ?? 0, completed: Boolean(progress?.completed), drafts: progress?.drafts ?? {}, profile: profile ?? null };
+    return { stage: currentStage(progress), completed: Boolean(progress?.completed), drafts: progress?.drafts ?? {}, profile: profile ?? null };
   }
   async function saveProgress({ stage, drafts = {} }) {
     if (!Number.isInteger(stage) || stage < 0 || stage >= ONBOARDING_STAGES.length) throw new Error("Invalid onboarding stage.");
     const instant = now();
-    await runTransaction(database, ["settings"], "readwrite", ({ store }) => store("settings").put({ id: "onboarding.progress", stage, drafts, completed: false, createdAt: instant, updatedAt: instant, schemaVersion: 2 }));
+    await runTransaction(database, ["settings"], "readwrite", ({ store }) => store("settings").put({ id: "onboarding.progress", stage, drafts, completed: false, flowVersion: 2, createdAt: instant, updatedAt: instant, schemaVersion: 2 }));
   }
   async function saveProfile(input) {
     const errors = {};
@@ -35,7 +42,7 @@ export function createOnboardingService(database, { now = () => new Date().toISO
     if (!hasAccount) throw new Error("Add at least one active money source before finishing setup.");
     return runTransaction(database, ["settings", "profiles", "auditLogs"], "readwrite", async ({ store }) => {
       profile.setupCompleted = true; profile.setupCompletedAt = instant; profile.updatedAt = instant; await store("profiles").put(profile);
-      await store("settings").put({ id: "onboarding.progress", stage: 12, drafts: {}, completed: true, completedAt: instant, createdAt: instant, updatedAt: instant, schemaVersion: 2 });
+      await store("settings").put({ id: "onboarding.progress", stage: ONBOARDING_STAGES.length - 1, drafts: {}, completed: true, flowVersion: 2, completedAt: instant, createdAt: instant, updatedAt: instant, schemaVersion: 2 });
       await store("auditLogs").add(createAuditEvent("onboarding.completed", { profileId: profile.id })); return profile;
     });
   }

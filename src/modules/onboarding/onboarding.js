@@ -8,15 +8,13 @@ const STAGES = [
   ["Loans", "Optional. Unknown historical details can be left blank."],
   ["Income sources", "Optional planned income configuration; this does not create income transactions."],
   ["Recurring commitments", "Optional templates only; no occurrences or transactions are generated."],
-  ["Investments", "Optional user-entered opening estimates; prices and gains are not calculated."],
-  ["Properties", "Optional. A location label is enough; do not enter an exact address."],
-  ["Vehicles", "Optional. Full registration details are not required."],
+  ["Investments and deposits", "Optional. Add shares, mutual funds, fixed deposits and other financial investments."],
   ["Emergency-fund target", "Optional planning preference in months."],
   ["Opening financial summary", "Opening values are initial positions, never income or expenses."],
   ["Review and complete", "Review your setup. You can edit every entity later."],
 ];
 
-const ENTITY_STAGE = { 2: "account", 3: "creditCard", 4: "loan", 5: "incomeSource", 6: "commitment", 7: "investment", 8: "property", 9: "vehicle" };
+const ENTITY_STAGE = { 2: "account", 3: "creditCard", 4: "loan", 5: "incomeSource", 6: "commitment", 7: "investment" };
 const DEFAULT_ONLY_FIELDS = {
   account: new Set(["accountType"]), creditCard: new Set(["network"]), loan: new Set(["loanType", "rateType"]),
   incomeSource: new Set(["incomeType", "frequency"]), commitment: new Set(["commitmentType", "frequency"]), investment: new Set(["assetClass"]),
@@ -28,8 +26,6 @@ const FIELDS = {
   incomeSource: [["name", "Income source name"], ["incomeType", "Income type", "select", ["salary", "business", "rent", "pension", "interest", "custom"]], ["expectedAmountPaise", "Expected amount (₹)", "money"], ["frequency", "Frequency", "select", ["monthly", "weekly", "quarterly", "yearly"]], ["expectedDay", "Expected day (optional)", "number"]],
   commitment: [["name", "Commitment name"], ["commitmentType", "Commitment type", "select", ["emi", "rent", "utility", "insurance", "subscription", "school-fees", "custom"]], ["expectedAmountPaise", "Expected amount (₹)", "money"], ["frequency", "Frequency", "select", ["monthly", "weekly", "quarterly", "yearly"]], ["dueDayOfMonth", "Due day (optional)", "number"]],
   investment: [["name", "Investment or holding name"], ["assetClass", "Asset class", "select", ["equity", "mutual-fund", "etf", "bond", "fixed-deposit", "retirement", "crypto", "custom"]], ["institution", "Broker or institution (optional)"], ["brokerAccountName", "Broker account nickname (optional)"], ["brokerAccountLastFour", "Broker account last four characters (optional)"], ["quantity", "Quantity or units"], ["openingCostBasisPaise", "Total cost basis (₹, optional)", "money"], ["openingEstimatedValuePaise", "Current estimated value (₹)", "money"], ["valuationDate", "Valuation date", "date"]],
-  property: [["nickname", "Property nickname"], ["propertyType", "Property type"], ["locationLabel", "Location label (optional)"], ["ownershipPercentage", "Ownership percentage", "number"], ["openingEstimatedValuePaise", "Opening estimated value (paise)", "number"], ["valuationDate", "Valuation date", "date"], ["depreciationMethod", "Depreciation policy", "select", ["none", "straight-line"]], ["depreciationAnnualRateBasisPoints", "Annual depreciation rate (basis points, if enabled)", "number"], ["depreciationResidualValuePaise", "Residual value (paise, if enabled)", "number"], ["depreciationStartDate", "Depreciation start date (if enabled)", "date"]],
-  vehicle: [["nickname", "Vehicle nickname"], ["vehicleType", "Vehicle type"], ["registrationLabel", "Registration label / last characters (optional)"], ["openingEstimatedValuePaise", "Opening estimated value (paise)", "number"], ["valuationDate", "Valuation date", "date"], ["depreciationMethod", "Depreciation policy", "select", ["none", "straight-line"]], ["depreciationAnnualRateBasisPoints", "Annual depreciation rate (basis points, if enabled)", "number"], ["depreciationResidualValuePaise", "Residual value (paise, if enabled)", "number"], ["depreciationStartDate", "Depreciation start date (if enabled)", "date"]],
 };
 
 function field([name, label, type = "text", options], draft, errors) {
@@ -68,14 +64,14 @@ export function createOnboarding({ onboarding, entities, onExit, onComplete }) {
       if (!result.ok) return;
       message = result.warnings.join(" "); state.drafts[ONBOARDING_STAGES[stage]] = {};
     }
-    if (stage === 10 && draft.emergencyFundMonths !== "") { const result = await onboarding.saveProfile({ ...state.profile, emergencyFundMonths: Number(draft.emergencyFundMonths) }); if (!result.ok) { errors = result.errors; render(); return; } state.profile = result.profile; }
-    if (stage === 12) { try { await onboarding.complete(); state.completed = true; render(); onComplete?.(); } catch (error) { message = error.message; render(); } return; }
-    const next = Math.min(12, stage + 1); await persist(next, type ? {} : collect()); stage = next; render();
+    if (stage === 8 && draft.emergencyFundMonths !== "") { const result = await onboarding.saveProfile({ ...state.profile, emergencyFundMonths: Number(draft.emergencyFundMonths) }); if (!result.ok) { errors = result.errors; render(); return; } state.profile = result.profile; }
+    if (stage === 10) { try { await onboarding.complete(); state.completed = true; render(); onComplete?.(); } catch (error) { message = error.message; render(); } return; }
+    const next = Math.min(10, stage + 1); await persist(next, type ? {} : collect()); stage = next; render();
   }
   function render() {
     view.replaceChildren(); const [titleText, description] = STAGES[stage];
-    const progress = document.createElement("p"); progress.className = "onboarding__progress"; progress.textContent = `Step ${stage + 1} of 13`;
-    const progressBar = document.createElement("progress"); progressBar.max = 13; progressBar.value = stage + 1; progressBar.setAttribute("aria-label", "Onboarding progress");
+    const progress = document.createElement("p"); progress.className = "onboarding__progress"; progress.textContent = `Step ${stage + 1} of 11`;
+    const progressBar = document.createElement("progress"); progressBar.max = 11; progressBar.value = stage + 1; progressBar.setAttribute("aria-label", "Onboarding progress");
     const title = document.createElement("h1"); title.id = "onboarding-title"; title.tabIndex = -1; title.textContent = titleText;
     const intro = document.createElement("p"); intro.textContent = description; view.append(progress, progressBar, title, intro);
     const form = document.createElement("form"); form.noValidate = true; const draft = draftFor();
@@ -85,17 +81,17 @@ export function createOnboarding({ onboarding, entities, onExit, onComplete }) {
       const type = ENTITY_STAGE[stage]; entities.list(type, { status: "", includeArchived: false }).then((records) => { saved.textContent = records.length ? `Already added (${records.length}): ${records.map((record) => record.nickname ?? record.name).join(", ")}` : "Nothing added yet."; });
       for (const def of FIELDS[type]) form.append(field(def, draft, errors));
     }
-    else if (stage === 10) form.append(field(["emergencyFundMonths", "Emergency-fund target (months)", "number"], { emergencyFundMonths: state.profile?.emergencyFundMonths ?? "", ...draft }, errors));
-    else if (stage === 11) { const summary = document.createElement("p"); summary.textContent = "Every opening balance, outstanding liability, and estimated asset value is stored as a dated opening-position record linked to its entity and audit event."; form.append(summary); }
-    else if (stage === 12) { const summary = document.createElement("p"); summary.textContent = `Profile: ${state.profile?.displayName ?? "not set"}. Completion requires this profile and at least one active account.`; form.append(summary); }
+    else if (stage === 8) form.append(field(["emergencyFundMonths", "Emergency-fund target (months)", "number"], { emergencyFundMonths: state.profile?.emergencyFundMonths ?? "", ...draft }, errors));
+    else if (stage === 9) { const summary = document.createElement("p"); summary.textContent = "Opening balances, outstanding debts and financial investment values form your starting money position. Homes and vehicles can be added later only for expense tracking."; form.append(summary); }
+    else if (stage === 10) { const summary = document.createElement("p"); summary.textContent = `Profile: ${state.profile?.displayName ?? "not set"}. Completion requires this profile and at least one active account.`; form.append(summary); }
     if (Object.keys(errors).length) { const status = document.createElement("p"); status.className = "status-banner status-banner--warning"; status.setAttribute("role", "alert"); status.textContent = `Please correct ${Object.keys(errors).length} highlighted field${Object.keys(errors).length === 1 ? "" : "s"}.`; form.prepend(status); }
     if (message) { const status = document.createElement("p"); status.className = "status-banner status-banner--warning"; status.setAttribute("role", "status"); status.textContent = message; form.append(status); }
     const actions = document.createElement("div"); actions.className = "onboarding__actions";
     const back = document.createElement("button"); back.type = "button"; back.className = "button button--secondary"; back.textContent = "Back"; back.disabled = stage === 0; back.onclick = async () => { await persist(stage - 1); stage -= 1; render(); };
     const save = document.createElement("button"); save.type = "button"; save.className = "button button--secondary"; save.textContent = "Save draft and exit"; save.onclick = async () => { await persist(stage); onExit?.(); };
-    const optional = stage >= 3 && stage <= 10; if (optional) { const skip = document.createElement("button"); skip.type = "button"; skip.className = "button button--secondary"; skip.textContent = "Skip for now"; skip.onclick = async () => { const next = stage + 1; await persist(next); stage = next; render(); }; actions.append(skip); }
+    const optional = stage >= 3 && stage <= 8; if (optional) { const skip = document.createElement("button"); skip.type = "button"; skip.className = "button button--secondary"; skip.textContent = "Skip for now"; skip.onclick = async () => { const next = stage + 1; await persist(next); stage = next; render(); }; actions.append(skip); }
     if (ENTITY_STAGE[stage]) { const another = document.createElement("button"); another.type = "button"; another.className = "button button--secondary"; another.textContent = "Save and add another"; another.onclick = async () => { errors = {}; const draft = collect(); const result = await saveEntity(draft); if (!result.ok) return; await persist(stage, {}); message = `${result.record.nickname ?? result.record.name} added. You can add another.`; render(); }; actions.append(another); }
-    const next = document.createElement("button"); next.type = "submit"; next.className = "button"; next.textContent = stage === 12 ? "Complete setup" : ENTITY_STAGE[stage] ? "Save and continue" : "Continue"; actions.append(back, save, next); form.append(actions); form.onsubmit = (event) => { event.preventDefault(); continueStep(); }; view.append(form); title.focus();
+    const next = document.createElement("button"); next.type = "submit"; next.className = "button"; next.textContent = stage === 10 ? "Complete setup" : ENTITY_STAGE[stage] ? "Save and continue" : "Continue"; actions.append(back, save, next); form.append(actions); form.onsubmit = (event) => { event.preventDefault(); continueStep(); }; view.append(form); title.focus();
   }
   return { element: view, start };
 }

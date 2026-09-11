@@ -44,7 +44,7 @@ test("security flow is local-only and backup files are not cached", async () => 
 test("wealth route exposes transparent local valuation and recalculation controls", async () => {
   const center = await readFile(resolve(root, "src/modules/wealth/wealth-center.js"), "utf8");
   const bootstrap = await readFile(resolve(root, "src/app/bootstrap.js"), "utf8");
-  for (const label of ["Wealth change explanation", "Record a valuation", "Recalculate history", "Saved snapshots"]) assert.ok(center.includes(label));
+  for (const label of ["How this changed", "Record a valuation", "Recalculate history", "Saved snapshots", "Money overview"]) assert.ok(center.includes(label));
   assert.match(bootstrap, /createWealthCenter/);
   assert.doesNotMatch(center, /fetch\(|XMLHttpRequest|WebSocket/);
 });
