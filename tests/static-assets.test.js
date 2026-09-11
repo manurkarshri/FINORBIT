@@ -61,6 +61,8 @@ test("transaction UI retains mobile input and bounded-rendering safeguards", asy
   const service = await readFile(resolve(root, "src/services/transaction-service.js"), "utf8");
   const styles = await readFile(resolve(root, "src/styles/components.css"), "utf8");
   assert.match(center, /inputMode = "decimal"/); assert.match(center, /aria-busy/);
+  for (const label of ["Optional details and receipt", "Transfers, cards, loans and investments", "More filters"]) assert.ok(center.includes(label));
+  assert.match(center, /QUICK\.slice\(0, 2\)/); assert.match(center, /`Add \$\{label\.toLowerCase\(\)\}`/);
   assert.match(service, /filters\.limit/); assert.match(service, /: 200/);
   assert.match(styles, /min-width: 0/);
 });

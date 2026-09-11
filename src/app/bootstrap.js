@@ -3,7 +3,7 @@ import { createRouter } from "./router.js";
 import { readThemePreference, setState } from "./state.js";
 import { createErrorMessage } from "../components/shell.js";
 import { ConnectionManager } from "../database/connection.js";
-import { migrateThemePreference } from "../database/settings.js";
+import { migrateThemePreference, setSetting } from "../database/settings.js";
 import { createCoordination } from "../security/coordination.js";
 import { createLockManager } from "../security/lock-manager.js";
 import { createSecurityCenter } from "../modules/security/security-center.js";
@@ -158,8 +158,9 @@ async function bootstrap() {
       });
     },
     onLock: () => lockManager?.lock("manual"),
-    onStandardBackup: () => createBackup(database),
-    onEncryptedBackup: (secret) => createBackup(database, { encrypted: true, secret }),
+    onStandardBackup: async () => { const payload = await createBackup(database); await setSetting(database, "backup.lastExportAt", payload.exportedAt); return payload; },
+    onEncryptedBackup: async (secret, { includeReceipts = false } = {}) => { const payload = await createBackup(database, { encrypted: true, secret, includeReceipts }); await setSetting(database, "backup.lastExportAt", new Date().toISOString()); return payload; },
+    onBackupStatus: async () => (await getSetting(database, "backup.lastExportAt"))?.value,
     onRestorePreview: async (file) => {
       const secret = file.size ? prompt("If this backup is encrypted, enter its passphrase; otherwise leave blank.") ?? undefined : undefined;
       const { payload, preview } = await parseBackup(await file.text(), { secret });

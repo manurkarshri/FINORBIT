@@ -26,6 +26,16 @@ test("encrypted backup parses only with correct secret", async () => {
   database.close();
 });
 
+test("complete encrypted backup can carry receipt files outside browser storage", async () => {
+  const database = await db();
+  await runTransaction(database, ["transactions", "receipts"], "readwrite", async ({ store }) => { await store("transactions").put({ id: "transaction_123", updatedAt: new Date().toISOString() }); await store("receipts").put({ id: "receipt_123", transactionId: "transaction_123", contentBase64: "aGVsbG8=", size: 5, updatedAt: new Date().toISOString() }); });
+  const encrypted = await createBackup(database, { encrypted: true, secret: "receipt backup phrase", includeReceipts: true });
+  const { payload } = await parseBackup(JSON.stringify(encrypted), { secret: "receipt backup phrase" });
+  assert.equal(payload.stores.receipts[0].contentBase64, "aGVsbG8=");
+  assert.equal(payload.stores.receipts[0].contentExcluded, undefined);
+  database.close();
+});
+
 test("restore preview discloses backed-up app-lock configuration", async () => {
   const database = await db();
   await runTransaction(database, ["settings"], "readwrite", ({ store }) => store("settings").put({ id: "security.credential", verifier: "synthetic", updatedAt: new Date().toISOString() }));

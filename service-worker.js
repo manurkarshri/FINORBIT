@@ -1,4 +1,4 @@
-const CACHE_VERSION = "finorbit-shell-v21";
+const CACHE_VERSION = "finorbit-shell-v23";
 const SCOPE_URL = new URL(self.registration.scope);
 const toScopeUrl = (path) => new URL(path, SCOPE_URL).href;
 
